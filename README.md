@@ -1,8 +1,10 @@
-# jazzstock_bot
+# JAZZSTOCK_BOT
+
+* jazzstock.net / jazztronomers@gmail.com / blog.naver.com/rubenchu 
 
 1) 본 Repository는 실시간 주가를 크롤링하여, 조건에 부합하는경우 Rest API로 Application Server로 메세지를 전달하여, 최종적으로는 소스코드 레벨의 조건매매를 진행하기 위함입니다.
 
-2) 본 Repository는 JAZZSTOCK 개발DB연동이 필수조건으로, DB접속계정 발급관련 문의는 이메일로 보내주세요, Standalone 버전은 귀찮아서 아직은 만들 생각없습니다.
+2) 본 Repository는 JAZZSTOCK 개발DB연동이 필수조건으로, DB접속계정 발급관련 문의는 이메일로 보내주세요, Standalone 버전은 귀찮아서 아직은 만들 생각없습니다
 
 
 
