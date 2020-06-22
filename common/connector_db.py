@@ -4,10 +4,10 @@ import pandas as pd
 import time
 
 
-ip = cs.ip
-id = cs.id
-pw = cs.pw
-dbScheme = cs.dbScheme
+ip = cs.IP
+id = cs.ID
+pw = cs.PW
+dbScheme = cs.DBSCHEME
 
 
 
