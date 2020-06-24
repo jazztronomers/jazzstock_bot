@@ -213,22 +213,51 @@ class JazzstockCrawlingObject:
         return pd.DataFrame(temp).T[['STOCKNAME','CLOSE','BBP','BBW','K','D','J','VOLUME', 'VOLUME_25', 'VOLUME_75','RSI']]
 
     # 가장최근 분봉정보를 출력하는 함수
-    def check_status(self, min_1_line=0, min_5_line=1, columns=['DATE','TIME','BBP','BBW','K','D','J']):
-
-#         print('*** %s (%s) -- %s' % (self.stockname, self.stockcode, datetime.now().time()))
-#         print(self.df_min_raw_naver.tail(3))
-#         print(self.df_ohlc_realtime.tail(3))
-#         print(self.df_ohlc_realtime_filled)
-
-        if(len(self.df_ohlc_realtime_filled)>1):
-            print('%s'%(self.stockname.ljust(8,' ')),                          # 종목명
-                '%06s'%(self.OPEN),                                            # 시초가
-                '%s'%(self.df_min_raw_naver.tail(1).TIMEKEY.values[0]),   # 현재시각
-                '%08s'%(int(self.df_min_raw_naver.tail(1).CLOSE)),     # 현재가
-                '%04s'%(int(self.df_min_raw_naver.tail(1).FLUCT)),     # 변동
-                '|', '\t%s\t%s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f'%tuple(self.df_ohlc_realtime_filled[columns].values[-1].tolist()) # 5분봉정보
-                )
-
+    def check_status(self, min_1_line=0, min_5_line=1, columns=['DATE','TIME','BBP','BBW','K','D','J'], logmode=0):
+        '''
+        :param min_1_line
+        :param min_5_line
+        :param columns 체크할 컬럼명
+        :param logmode: 로깅모드, 콘솔에다 찍는 형태
+        
+        참고: 
+            df_min_raw_naver:
+            df_ohlc_realtime_filled:
+        
+        :return
+        '''
+        
+        a = 123
+        log_mode_dic= {'0':"콘솔에다 보기 좋은 형태로 프린트 - markdown / return True",
+                       '1':"콘솔에다가 dictionary로 프린트 - series 출력 / return True",
+                       '2':"dictionary를 반환                            / return dict(something)"}
+                    
+        # HUMAN READABLE : SINGLE LINE
+        if logmode == 0:
+            if(len(self.df_ohlc_realtime_filled)>1):
+                print('%s'%(self.stockname.ljust(8,' ')),                          # 종목명
+                    '%06s'%(self.OPEN),                                            # 시초가
+                    '%s'%(self.df_min_raw_naver.tail(1).TIMEKEY.values[0]),   # 현재시각
+                    '%08s'%(int(self.df_min_raw_naver.tail(1).CLOSE)),     # 현재가
+                    '%04s'%(int(self.df_min_raw_naver.tail(1).FLUCT)),     # 변동
+                    '|', '\t%s\t%s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f'%tuple(self.df_ohlc_realtime_filled[columns].values[-1].tolist()) # 5분봉정보
+                    )
+                
+        # HUMAN READABLE : MULTI LINE
+        elif logmode == 1:
+            print(self.stockname)
+            print('-'*80)
+            print('1분단위 체결정보:')
+            print(self.df_min_raw_naver.tail(5))
+            
+            print('\n5분봉:')
+            print(self.df_ohlc_realtime_filled[columns].tail(5))
+            print('='*100)
+            pass
+            
+            
+        elif logmode == 2:
+            pass
 
 
     # ==============================================================================================

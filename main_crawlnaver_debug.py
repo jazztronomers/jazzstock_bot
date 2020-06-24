@@ -21,5 +21,5 @@ if __name__=='__main__':
 
 
     m = JazzstockCrawlCoreSlaveNaver(stockcode_list=stockcode_list, is_debug=True, debug_date=debug_date)
-    m.initialize_dataframe(cntto=1)
+    # m.initialize_dataframe(cntto=1)
     m.debug()
