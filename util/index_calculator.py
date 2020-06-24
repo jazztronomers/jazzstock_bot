@@ -9,12 +9,9 @@ pd.set_option('display.max_columns', 10)
 pd.set_option('display.expand_frame_repr', False)
 pd.options.display.max_rows = 300
 
-def getlastdayindex():
-
-    pass
 
 
-def check_running_time(func):
+def _check_running_time(func):
     def new_func(*args, **kwargs):
         start_time = time.perf_counter()
         result = func(*args, **kwargs)
@@ -22,64 +19,29 @@ def check_running_time(func):
 
         runningtime = '%s | %s' % (func.__name__, end_time - start_time)
         print(runningtime)
-        return runningtime
-
+        return result
     return new_func
 
 
-# API 로 생성된
-def fillprevious(df, obj):
-
-    df['P5'] = obj.p5
-    df['P3'] = obj.p3
-    df['P1'] = obj.p1
-    df['F1'] = obj.f1
-    df['F3'] = obj.f3
-    df['F5'] = obj.f5
-    df['I1'] = obj.i1
-    df['I3'] = obj.i3
-    df['I5'] = obj.i5
-    df['KD'] = obj.kd
-    df['DD'] = obj.dd
-    df['JD'] = obj.jd
-    df['BBUD'] = obj.bbud
-    df['BBLD'] = obj.bbld
-
-    return df
-
 
 # FOR REAL TRADING, 최근 60개 혹은 그이상의 5분봉이 들어옴
-def fillindex(ipdf, obj=None):
+@_check_running_time
+def fillindex(ipdf):
+    '''
 
-    # INPUT SHOULD LOOK LIKE THIS
-    # STOCKCODE, DATE, TIME, OPEN, HIGH, LOW, CLOSE, VOLUME, DBBU, DBBL
-    #
-    # INPUT SHOULD APPEND BELOWS
-    #
-    # DBBU, DBBL
-    #
-    # 주가 이동평균선 COLUMN을 만들어줌
+    :param ipdf:
+    :param obj:
+    :return:
+    '''
 
-    if (obj!=None):
-        ipdf = fillprevious(ipdf, obj)
 
-    st=datetime.now()
     opdf = ipdf.copy()
     opdf = _movingaverage_price(opdf)
     opdf = _movingaverage_volume(opdf)
     opdf = _bolinger(opdf, 20, 2)
     opdf = _stochastics(opdf, 12, 5, 5)
-    # ==========================================
-    # OBV연산에 시간이 너무 오래걸림, 로직 최적화 필요.
-    # ==========================================
-    # opdf = _obv(opdf)
-    
-    # print('#5: ', datetime.now()-st)
+    opdf = _obv(opdf)
     opdf = _rsi(opdf)
-    
-    # print('#6: ', datetime.now()-st)
-
-
 
     # print('*********************************************')
     # print(opdf.columns)
@@ -88,7 +50,7 @@ def fillindex(ipdf, obj=None):
     return opdf
 
 
-
+@_check_running_time
 def _movingaverage_price(ipdf, n=[5,20,60], type = 0):
     '''
     :param df: META DATA + OHLC DATAFRAME, 60이평을 얻기 위해서는 최소 120줄은 들어와야 함.
@@ -107,6 +69,8 @@ def _movingaverage_price(ipdf, n=[5,20,60], type = 0):
 
     return opdf
 
+
+@_check_running_time
 def _movingaverage_volume(ipdf, n=[5,20,60], type = 0):
     '''
     :param df: META DATA + OHLC DATAFRAME, 60이평을 얻기 위해서는 최소 120줄은 들어와야 함.
@@ -123,7 +87,7 @@ def _movingaverage_volume(ipdf, n=[5,20,60], type = 0):
         opdf['VSMAR' + str(each)] = (opdf['VOLUME'] - opdf['VOLUME'].rolling(each).mean()) / opdf['VOLUME'].rolling(each).mean()
     return opdf
 
-
+@_check_running_time
 def _bolinger(ipdf, n=20, m=2, ma_type='s', type = 0):
     '''
 
@@ -184,7 +148,7 @@ def _bolinger(ipdf, n=20, m=2, ma_type='s', type = 0):
 
     return opdf
 
-
+@_check_running_time
 def _stochastics(ipdf, n=12, m=5, t=5, type = 'row'):
     '''
 
@@ -223,7 +187,7 @@ def _stochastics(ipdf, n=12, m=5, t=5, type = 'row'):
     opdf['J'] = opdf['D'].rolling(window = t).mean()       # J
 
     return opdf
-
+@_check_running_time
 def _rsi(ipdf, period=14):
     '''
     https://wikidocs.net/3399
@@ -247,33 +211,35 @@ def _rsi(ipdf, period=14):
     opdf['RSI'] = RSI
     return opdf
 
+@_check_running_time
 def _obv(ipdf):
 
-    obv = 0
     opdf = ipdf.copy()
-    
-#     print('DEBUG : OBV : LEN OPDF :', len(opdf))
-#     print(opdf)
-    
-    st = datetime.now()
-
     opdf['OBV'] = 0
     opdf['CLOSEDIFF'] = opdf.CLOSE.diff()
-    for i, row in opdf[['DATE','CLOSEDIFF']].iterrows():
-        if(row.CLOSEDIFF>0):
-            opdf['OBV'].loc[i] = opdf.loc[i]['VOLUME']
+    # for i, row in opdf[['DATE','CLOSEDIFF']].iterrows():
+    #     if(row.CLOSEDIFF>0):
+    #         opdf['OBV'].loc[i] = opdf.loc[i]['VOLUME']
+    #     else:
+    #         opdf['OBV'].loc[i] = -opdf.loc[i]['VOLUME']
+
+
+    for j, each in enumerate(opdf[['DATE','CLOSEDIFF']].values):
+
+        # print(j, opdf.loc[j].VOLUME)
+        if each[1] > 0:
+            opdf.at[j, 'OBV'] = opdf.loc[j].VOLUME
         else:
-            opdf['OBV'].loc[i] = -opdf.loc[i]['VOLUME']
+            opdf.at[j, 'OBV'] = -opdf.loc[j].VOLUME
 
     opdf['OBV']=opdf['OBV'].cumsum()
-    opdf= _get_quartile(opdf,['OBV'])
+
+    # opdf= _get_quartile(opdf,['OBV'])
 
     return opdf
 
-
+@_check_running_time
 def _get_quartile(ipdf, columns=[], n=[10, 25, 75, 90]):
-
-
     opdf = ipdf.copy()
 
     for each in columns:
@@ -284,6 +250,8 @@ def _get_quartile(ipdf, columns=[], n=[10, 25, 75, 90]):
     return opdf
 
 
+
+@_check_running_time
 def _movingaverage_weighted_price(ipdf, n=[5,20,60], type = 0):
     '''
     :param df: META DATA + OHLC DATAFRAME, 60이평을 얻기 위해서는 최소 120줄은 들어와야 함.
@@ -353,30 +321,33 @@ def showplot(df, columns):
 if __name__ == '__main__':
 
     # # DAILY
-    # df = db.selectpd('''
-    # SELECT CAST(A.DATE AS CHAR) AS DATE, CNT, A.OPEN, A.HIGH, A.LOW, A.CLOSE, B.VOLUME
-    # FROM jazzdb.T_STOCK_OHLC_DAY A
-    # JOIN jazzdb.T_STOCK_SND_DAY B USING (STOCKCODE, DATE)
-    # JOIN jazzdb.T_DATE_INDEXED C USING (DATE)
-    # WHERE 1=1
-    # AND STOCKCODE = '290720'
-    # AND CNT < 600
-    # ORDER BY DATE ASC
-    # ''')
-    #
-
     df = db.selectpd('''
-    SELECT CAST(A.DATE AS CHAR) AS DATE, A.OPEN, A.HIGH, A.LOW, A.CLOSE, B.VOLUME, A.VALUE
+    SELECT CAST(A.DATE AS CHAR) AS DATE, CNT, A.OPEN, A.HIGH, A.LOW, A.CLOSE, B.VOLUME
     FROM jazzdb.T_STOCK_OHLC_DAY A
     JOIN jazzdb.T_STOCK_SND_DAY B USING (STOCKCODE, DATE)
     JOIN jazzdb.T_DATE_INDEXED C USING (DATE)
-    WHERE 1=1 
-    AND STOCKCODE = '093320'
-    AND DATE > '2019-01-01'
-    AND CNT < 120
+    WHERE 1=1
+    AND STOCKCODE = '032190'
+    AND CNT < 10
     ORDER BY DATE ASC
     ''')
+    #
+
+    # df = db.selectpd('''
+    # SELECT CAST(A.DATE AS CHAR) AS DATE, A.TIME, A.OPEN, A.HIGH, A.LOW, A.CLOSE, A.VOLUME
+    # FROM jazzdb.T_STOCK_OHLC_MIN A
+    # JOIN jazzdb.T_DATE_INDEXED C USING (DATE)
+    # WHERE 1=1
+    # AND STOCKCODE = '093320'
+    # ORDER BY DATE, TIME
+    # LIMIT
+    # ''')
+
+    print(df.head(10))
+    print(df.tail(10))
 
     rt = fillindex(df)
     print(rt)
 
+
+    showplot(rt, 'OBV')
