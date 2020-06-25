@@ -91,7 +91,7 @@ class JazzstockCrawlCoreSlaveNaver(JazzstockCrawlCoreSlave):
 
         print('-'*100)
         print('전거래일 일봉기준 주가 및 지표 :')
-        print(listdf)
+        print(listdf.sort_values('BBP',ascending=True))
         print('-'*100)
         return listdf
 
@@ -153,12 +153,25 @@ class JazzstockCrawlCoreSlaveNaver(JazzstockCrawlCoreSlave):
                         time.sleep(1)
 
                     else:
+
+                        st = datetime.now()
                         for eachcode in self.stock_dict.keys():
-                            self.stock_dict[eachcode].get_ohlc_min_from_naver()
+                            try:
+                                self.stock_dict[eachcode].get_ohlc_min_from_naver()
+                            except:
+                                time.sleep(4)
+                                print('==='*30)
+                                print(' C O N N E C T I O N E R R O R')
+                                print('==='*30)
+                                self.stock_dict[eachcode].get_ohlc_min_from_naver()
                             self.stock_dict[eachcode].get_candle_five()
                             self.stock_dict[eachcode].fill_index()
                             self.stock_dict[eachcode].check_status(logmode=1)
 
+                        print('\n')
+                        print(datetime.now()-st)
+                        print('\n')
+                        print('\n')
                         print('\n')
                         time.sleep(2)
             elif (marketready <= now < marketopen):
