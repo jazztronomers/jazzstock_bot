@@ -7,7 +7,7 @@ import util.index_calculator as ic
 from datetime import datetime
 
 warnings.filterwarnings('ignore')
-timedf = pd.read_csv('config/time.csv', dtype=str)
+timedf = pd.read_csv('../config/time.csv', dtype=str)
 
 tdic = {}
 for tk, t1, t5, t15 in sorted(timedf.values.tolist()):
@@ -15,7 +15,7 @@ for tk, t1, t5, t15 in sorted(timedf.values.tolist()):
 
 
 class JazzstockCrawlingObject:
-    def __init__(self, stockcode, stockname, use_db=False, debug=False):
+    def __init__(self, stockcode, use_db=False, debug=False):
 
         # DEBUGGING 여부 판단
         self.debug = debug 
@@ -69,7 +69,7 @@ class JazzstockCrawlingObject:
 
 
 
-    def get_ohlc_min_from_db(self, window=120, cntto=0):
+    def get_ohlc_min_from_db(self, window=1, cntto=0):
         '''
         DB에서 종목의 최근 분봉을 가져오는 함수
         :return:
@@ -82,10 +82,10 @@ class JazzstockCrawlingObject:
         JOIN jazzdb.T_DATE_INDEXED USING (DATE)
         WHERE 1=1
         AND STOCKCODE = '%s'
-        AND CNT BETWEEN %s AND 10
+        AND CNT BETWEEN %s AND %s
         ORDER BY DATE ASC, TIME ASC
 
-        ''' % (self.stockcode, cntto)
+        ''' % (self.stockcode, cntto, cntto+window)
 
         self.df_ohlc_min = db.selectpd(query)
 

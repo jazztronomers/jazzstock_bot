@@ -1,7 +1,7 @@
 import sys
 import os
 import common.connector_db as db
-from crawl.jazzstock_crawl_core import JazzstockCrawlCoreSlaveNaver
+from crawl.jazzstock_core_crawl import JazzstockCoreCrawlSlaveNaver
 
 # 실행부, 자세한 로직은 JazzstockCrawlCoreSlaveNaver를 참조
 
@@ -20,6 +20,6 @@ if __name__=='__main__':
     debug_date = db.selectSingleValue('SELECT CAST(DATE AS CHAR) AS DATE FROM jazzdb.T_DATE_INDEXED WHERE CNT = 0').replace('-','')
 
 
-    m = JazzstockCrawlCoreSlaveNaver(stockcode_list=stockcode_list, is_debug=True, debug_date=debug_date)
+    m = JazzstockCoreCrawlSlaveNaver(stockcode_list=stockcode_list, is_debug=True, debug_date=debug_date)
     # m.initialize_dataframe(cntto=1)
     m.debug()

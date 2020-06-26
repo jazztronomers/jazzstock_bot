@@ -17,7 +17,7 @@ tdic = {}
 for tk, t1, t5, t15 in sorted(timedf.values.tolist()):
     tdic[str(tk).zfill(6)] = {'T1': str(t1).zfill(6), 'T5': str(t5).zfill(6), 'T15': str(t15).zfill(6)}
 
-class JazzstockCrawlCoreSlave:
+class JazzstockCoreCrawlSlave:
 
     def __init__(self, stockcode_list, is_debug=False):
         self.stock_dict = {}
@@ -58,7 +58,7 @@ class JazzstockCrawlCoreSlave:
         pass
 
 
-class JazzstockCrawlCoreSlaveNaver(JazzstockCrawlCoreSlave):
+class JazzstockCoreCrawlSlaveNaver(JazzstockCoreCrawlSlave):
 
     def __init__(self, stockcode_list=[], is_debug=False, debug_date=None):
 
