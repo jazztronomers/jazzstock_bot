@@ -11,7 +11,7 @@ from crawl.jazzstock_object_trading import JazzstockTradingObject
 pd.options.display.max_rows = 500
 pd.options.display.max_columns= 500
 warnings.filterwarnings('ignore')
-timedf = pd.read_csv('config/time.csv', dtype=str)
+timedf = pd.read_csv('../config/time.csv', dtype=str)
 
 tdic = {}
 for tk, t1, t5, t15 in sorted(timedf.values.tolist()):
@@ -78,16 +78,17 @@ class JazzstockCoreCrawlSlaveNaver(JazzstockCoreCrawlSlave):
 
     def initialize_dataframe(self, cntto=0):
         '''
-        최초실행시 DB 또는 네이버에서 최근 일봉정보와 최근 분봉정보를 가져오는 함수
+        초기화된 모든 종목에 대해서
+        DB 특정거래일의 일봉정보와 분봉정보를 초기화하는 함수
         :return:
         '''
 
         listdf = pd.DataFrame()
 
         for eachcode in self.stock_dict.keys():
-            self.stock_dict[eachcode].get_ohlc_min_from_db(cntto=cntto)
-            self.stock_dict[eachcode].get_daily_index(cntto=1)
-            listdf = listdf.append(self.stock_dict[eachcode].get_prev())
+            self.stock_dict[eachcode].set_ohlc_min_from_db(cntto=cntto)
+            self.stock_dict[eachcode].set_ohlc_day_from_db_include_index(cntto=cntto)
+            listdf = listdf.append(self.stock_dict[eachcode].get_info())
 
         print('-'*100)
         print('전거래일 일봉기준 주가 및 지표 :')
@@ -107,20 +108,13 @@ class JazzstockCoreCrawlSlaveNaver(JazzstockCoreCrawlSlave):
         for j in ['09','10','11']: # 9시부터 11시까지 1분단위로 디버깅
             for i in range(60):
                 ntime = '%s%s00' % (str(j).zfill(2), str(i).zfill(2))
-                st = datetime.now()
-                
-                
-                
-                
-                
-                print('종목명 / 시초가 / 시간 / 전일종가대비 변동 / 일자 / 근거5분봉 / BBP / BBW / K / D / J ')
                 for eachcode in self.stock_dict.keys():
                     try:
-                        self.stock_dict[eachcode].get_ohlc_min_from_naver(is_debug=ntime, debug_date=self.debug_date)
+                        self.stock_dict[eachcode].set_ohlc_min_from_naver(is_debug=ntime, debug_date=self.debug_date)
                     except:
                         print("*** CONNECTION ERROR")
                         break
-                    self.stock_dict[eachcode].get_candle_five(is_debug=ntime, debug_date=self.debug_date)
+                    self.stock_dict[eachcode].set_candle_five(is_debug=ntime, debug_date=self.debug_date)
                     self.stock_dict[eachcode].fill_index()
                     self.stock_dict[eachcode].check_status(logmode=1) # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하면됨.
                     
@@ -139,7 +133,7 @@ class JazzstockCoreCrawlSlaveNaver(JazzstockCoreCrawlSlave):
         marketopen = datetime.strptime('09:00:00', '%H:%M:%S').time()
         marketclose = datetime.strptime('15:30:00', '%H:%M:%S').time()
         
-        self.initialize_dataframe(cntto=1)
+        self.initialize_dataframe(cntto=0)
 
         print(' * RUN CRAWLING')
         while True:
@@ -157,14 +151,14 @@ class JazzstockCoreCrawlSlaveNaver(JazzstockCoreCrawlSlave):
                         st = datetime.now()
                         for eachcode in self.stock_dict.keys():
                             try:
-                                self.stock_dict[eachcode].get_ohlc_min_from_naver()
+                                self.stock_dict[eachcode].set_ohlc_min_from_naver()
                             except:
                                 time.sleep(4)
                                 print('==='*30)
                                 print(' C O N N E C T I O N E R R O R')
                                 print('==='*30)
-                                self.stock_dict[eachcode].get_ohlc_min_from_naver()
-                            self.stock_dict[eachcode].get_candle_five()
+                                self.stock_dict[eachcode].set_ohlc_min_from_naver()
+                            self.stock_dict[eachcode].set_candle_five()
                             self.stock_dict[eachcode].fill_index()
                             self.stock_dict[eachcode].check_status(logmode=1)
 

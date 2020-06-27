@@ -14,8 +14,28 @@ for tk, t1, t5, t15 in sorted(timedf.values.tolist()):
     tdic[str(tk).zfill(6)] = {'T1': str(t1).zfill(6), 'T5': str(t5).zfill(6), 'T15': str(t15).zfill(6)}
 
 
+
+# =====================================================================================
+# 추가구현시 FUNCTION 네이밍 참조:
+# =====================================================================================
+# SET_FUNC   => 객체에 뭔가를 입히는 함수, 아무것도 반환하지 않고, 객체에 입히기만 한다.
+# GET_FUNC   => 객체에서 무언가를 꺼내오는 함수, 되도록 GET_FUNC 에서는 아무것도 출력하지 않고
+#               CORE 부에서 메세지를 출력한다.
+# CAL_FUNC   => 인풋에 대해서 뭔가를 계산하여 반환하는 함수
+
+# _FUNC      => 객체내부에서만 사용되는 함수, 외부에서 호출할일 없는 함수는 _ 을 붙여주도록.
+# =====================================================================================
+
+
+
 class JazzstockCrawlingObject:
     def __init__(self, stockcode, use_db=False, debug=False):
+        '''
+
+        :param stockcode:
+        :param use_db:
+        :param debug:
+        '''
 
         # DEBUGGING 여부 판단
         self.debug = debug 
@@ -31,13 +51,17 @@ class JazzstockCrawlingObject:
         self.df_ohlc_realtime_filled = pd.DataFrame()
 
         self.df_min_raw_naver = pd.DataFrame(columns=['체결시각', '체결가', '전일비', '매도', '매수', '거래량', '변동량'])
-
-
         self.OPEN = None
 
+    def set_ohlc_day_from_db_include_index(self, window=240, cntto=0, columns=[]):
+        '''
 
-    def get_daily_index(self, window=240, cntto=0):
+        DB에서 일봉 OHLC 정보 그리고 각종 지표를 포함하여 return 하는 함수
 
+        :param window: 지표계산용 windows 사이즈
+        :param cntto:  거래일 정보, default는 최근거래일으로 0을 준다
+        :return: 일봉기준 window 범위안에 모든 지표
+        '''
         query = '''
 
         SELECT A.DATE, A.OPEN, A.HIGH, A.LOW, A.CLOSE, B.VOLUME, 
@@ -58,18 +82,19 @@ class JazzstockCrawlingObject:
         ''' % (self.stockcode, cntto, window)
 
         # DB에 없는 값들은 util.index_calculator.py 를 사용해서 계산
-
         df = db.selectpd(query)
         df = ic._get_quartile(df, ['VOLUME'])
         df = ic._rsi(df)
-        self.sr_daily = df.iloc[-1]
+
+        if columns:
+            df = df[columns]
+
+        self.sr_daily=df.iloc[-1]
+
+        return df
 
 
-
-
-
-
-    def get_ohlc_min_from_db(self, window=1, cntto=0):
+    def set_ohlc_min_from_db(self, window=1, cntto=0):
         '''
         DB에서 종목의 최근 분봉을 가져오는 함수
         :return:
@@ -91,20 +116,20 @@ class JazzstockCrawlingObject:
 
         print(" * %s(%s)의 %s일치 5분봉데이터를 DB에서 조회해왔습니다" % (self.stockname, self.stockcode, window))
 
-    def check_running_time(func):
+
+    def _check_running_time(func):
         def new_func(*args, **kwargs):
             start_time = time.perf_counter()
             result = func(*args, **kwargs)
             end_time = time.perf_counter()
-
-            runningtime = '%s | %s' % (func.__name__, end_time - start_time)
+            runningtime = '%s | %s sec' % (func.__name__, round(end_time - start_time, 3))
             # print(runningtime)
-            return runningtime
+            return result
 
         return new_func
 
-    @check_running_time
-    def get_ohlc_min_from_naver(self, is_debug=False, debug_date=None):
+    @_check_running_time
+    def set_ohlc_min_from_naver(self, is_debug=False, debug_date=None):
         '''
         NAVER에서 해당종목의 당일 분단위 종가 / 거래량변동을 실행시점까지 긁어오는 함수
 
@@ -173,8 +198,8 @@ class JazzstockCrawlingObject:
                 self.OPEN = int(temp.CLOSE-temp.FLUCT)
                 break
 
-    @check_running_time
-    def get_candle_five(self, is_debug=False, debug_date=False):
+    @_check_running_time
+    def set_candle_five(self, is_debug=False, debug_date=False):
 
         rtdf = self.df_ohlc_min.copy()
         DATE = debug_date or str(datetime.now().date())
@@ -200,17 +225,22 @@ class JazzstockCrawlingObject:
 
         self.df_ohlc_realtime = rtdf.copy()
 
-
-    @check_running_time
+    @_check_running_time
     def fill_index(self):
         self.df_ohlc_realtime_filled=ic.fillindex(self.df_ohlc_realtime).tail(5)
 
-    # 직전거래일 정보를 리턴하는 함수
-    def get_prev(self):
 
+
+    def get_info(self, type='DataFrame'):
+        '''
+
+        직전거래일의 정보를 싱글ROW DATAFRAME으로 반환하는 함수
+
+        :return:
+        '''
         temp = self.sr_daily
-        temp['STOCKNAME']=self.stockname
-        return pd.DataFrame(temp).T[['STOCKNAME','CLOSE','BBP','BBW','K','D','J','VOLUME', 'VOLUME_25', 'VOLUME_75','RSI']]
+        temp['STOCKNAME'] = self.stockname
+        return pd.DataFrame(temp).T[['STOCKNAME','DATE', 'CLOSE','BBP','BBW','K','D','J','VOLUME','RSI']]
 
     # 가장최근 분봉정보를 출력하는 함수
     def check_status(self, min_1_line=0, min_5_line=1, columns=['DATE','TIME','BBP','BBW','K','D','J'], logmode=0):
@@ -227,10 +257,10 @@ class JazzstockCrawlingObject:
         :return
         '''
         
-        a = 123
-        log_mode_dic= {'0':"콘솔에다 보기 좋은 형태로 프린트 - markdown / return True",
-                       '1':"콘솔에다가 dictionary로 프린트 - series 출력 / return True",
-                       '2':"dictionary를 반환                            / return dict(something)"}
+        # a = 123
+        # log_mode_dic= {'0':"콘솔에다 보기 좋은 형태로 프린트 - markdown / return True",
+        #                '1':"콘솔에다가 dictionary로 프린트 - series 출력 / return True",
+        #                '2':"dictionary를 반환                            / return dict(something)"}
                     
         # HUMAN READABLE : SINGLE LINE
         if logmode == 0:

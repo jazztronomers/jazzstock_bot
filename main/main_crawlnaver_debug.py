@@ -1,5 +1,4 @@
 import sys
-import os
 import common.connector_db as db
 from crawl.jazzstock_core_crawl import JazzstockCoreCrawlSlaveNaver
 
@@ -11,9 +10,9 @@ if __name__=='__main__':
         stockcode_list = sys.argv[1:]
 
     else:
-        stockcode_list = ['079940', '093320', '035420', '060250', '131370', '023590', '239610', '035720', '036800', '119860']
+        # stockcode_list = ['079940', '093320', '035420', '060250', '131370', '023590', '239610', '035720', '036800', '119860']
+        stockcode_list = ['131370', '079940']
         # stockcode_list = db.selectSingleColumn('SELECT STOCKCODE FROM jazzdb.T_UNIVERSE_LIST WHERE DATE = "2020-04-28" LIMIT 40')
-        # stockcode_list = ['131370', '079940']
 
 
     print(stockcode_list)
@@ -21,5 +20,4 @@ if __name__=='__main__':
 
 
     m = JazzstockCoreCrawlSlaveNaver(stockcode_list=stockcode_list, is_debug=True, debug_date=debug_date)
-    # m.initialize_dataframe(cntto=1)
     m.debug()

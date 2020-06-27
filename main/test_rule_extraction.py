@@ -8,7 +8,7 @@ pd.options.display.max_columns= 500
 
 obj = JazzstockCrawlingObject('131370','알서포트')
 obj.get_daily_index(cntto=1)                    # -1 거래일 까지의 일봉정보를 가져옴
-obj.get_ohlc_min_from_db(cntto=0)               # -0 거래일 까지의 5분봉을 가져옴
+obj.set_ohlc_min_from_db(cntto=0)               # -0 거래일 까지의 5분봉을 가져옴
 obj.df_ohlc_min = ic.fillindex(obj.df_ohlc_min) # 5분봉에 지표들을 붙여줌
 
 print(obj.df_ohlc_min.columns)
