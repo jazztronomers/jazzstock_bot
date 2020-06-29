@@ -1,7 +1,8 @@
 import sys
 import os
 import common.connector_db as db
-from crawl.jazzstock_core_crawl import JazzstockCoreCrawlSlaveNaver
+from datetime import datetime
+from crawl.jazzstock_core_realtime import JazzstockCoreRealtimeNaver
 
 # 실행부, 자세한 로직은 JazzstockCrawlCoreSlaveNaver를 참조
 
@@ -23,6 +24,8 @@ if __name__=='__main__':
         #                                        "ORDER BY YG1 "
         #                                        "LIMIT 60 ")
 
-    m = JazzstockCoreCrawlSlaveNaver(stockcode_list=stockcode_list)
-    # m.initialize_dataframe(cntto=0) # 마지막1거래일을 실시간으로 디버깅하겠다는 의미
+    the_date = datetime.now().date()
+    the_date_index = 0
+
+    m = JazzstockCoreRealtimeNaver(stockcode_list = stockcode_list, the_date=the_date, the_date_index=the_date_index)
     m.run()

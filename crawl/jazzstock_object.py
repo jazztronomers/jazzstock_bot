@@ -28,24 +28,28 @@ for tk, t1, t5, t15 in sorted(timedf.values.tolist()):
 
 
 
-class JazzstockCrawlingObject:
-    def __init__(self, stockcode, use_db=False, debug=False):
+class JazzstockObject:
+    def __init__(self, stockcode, the_date=datetime.now().date(), the_date_index=0):
+
         '''
 
-        :param stockcode:
-        :param use_db:
-        :param debug:
+        :param stockcode:       종목코드
+        :param the_date:        해당종목을 초기화할 날짜
+        :param the_date_index:
+
         '''
 
-        # DEBUGGING 여부 판단
-        self.debug = debug 
-        self.use_db = use_db
+
         self.stockcode = stockcode
         self.stockname = db.selectSingleValue(
             'SELECT STOCKNAME FROM jazzdb.T_STOCK_CODE_MGMT WHERE STOCKCODE = "%s"' % (stockcode))
+        self.the_date = the_date
+        self.the_date_index = the_date_index
+
 
         # 최적화 필요 부분
         self.sr_daily = pd.Series()
+        self.df_ohlc_day = pd.DataFrame()
         self.df_ohlc_min = pd.DataFrame() 
         self.df_ohlc_realtime = pd.DataFrame()
         self.df_ohlc_realtime_filled = pd.DataFrame()
@@ -89,9 +93,9 @@ class JazzstockCrawlingObject:
         if columns:
             df = df[columns]
 
+        self.df_ohlc_day = df
         self.sr_daily=df.iloc[-1]
 
-        return df
 
 
     def set_ohlc_min_from_db(self, window=1, cntto=0):
@@ -114,7 +118,8 @@ class JazzstockCrawlingObject:
 
         self.df_ohlc_min = db.selectpd(query)
 
-        print(" * %s(%s)의 %s일치 5분봉데이터를 DB에서 조회해왔습니다" % (self.stockname, self.stockcode, window))
+        if(cntto==0 and window==1):
+            print(" * %s(%s)의 %s일치 5분봉데이터를 DB에서 조회해왔습니다" % (self.stockname, self.stockcode, window))
 
 
     def _check_running_time(func):
@@ -243,7 +248,7 @@ class JazzstockCrawlingObject:
         return pd.DataFrame(temp).T[['STOCKNAME','DATE', 'CLOSE','BBP','BBW','K','D','J','VOLUME','RSI']]
 
     # 가장최근 분봉정보를 출력하는 함수
-    def check_status(self, min_1_line=0, min_5_line=1, columns=['DATE','TIME','BBP','BBW','K','D','J'], logmode=0):
+    def check_status(self, columns=['DATE','TIME','BBP','BBW','K','D','J'], logmode=0):
         '''
         :param min_1_line
         :param min_5_line
@@ -291,17 +296,157 @@ class JazzstockCrawlingObject:
 
 
     # ==============================================================================================
+    def set_prev_day_index(self):
+        '''
+
+
+
+        :return:
+        '''
+
+        # 직전거래일 정보를 한땀한땀 현재 객체에 담아준다
+        self.PREV_1_OPEN = self.sr_daily['OPEN']
+        self.PREV_1_CLOSE = self.sr_daily['CLOSE']
+        self.PREV_1_HIGH = self.sr_daily['HIGH']
+        self.PREV_1_LOW = self.sr_daily['LOW']
+        self.PREV_1_K = self.sr_daily['K']
+        self.PREV_1_D = self.sr_daily['D']
+        self.PREV_1_J = self.sr_daily['J']
+        self.PREV_1_BBP = self.sr_daily['BBP']
+        self.PREV_1_BBW = self.sr_daily['BBW']
+        self.PREV_1_RSI = self.sr_daily['RSI']
+
+
+        # 직전 5거래일간의 지표상 고점, 저점 등을 기록한다
+
+        self.PREV_5_OPEN = int(self.df_ohlc_day.tail(5).head(1).OPEN)
+        self.PREV_5_HIGH = self.df_ohlc_day.tail(5).HIGH.max()
+        self.PREV_5_LOW  = self.df_ohlc_day.tail(5).LOW.min()
+        self.PREV_5_K_HIGH  = self.df_ohlc_day.tail(5).K.max()
+        self.PREV_5_K_LOW =  self.df_ohlc_day.tail(5).K.min()
+
+
+        print(self.PREV_1_CLOSE, self.PREV_5_HIGH, self.PREV_1_K, self.PREV_5_K_HIGH, self.PREV_5_K_LOW)
+
+        # ======================================================
+        # 직전 N일 동안 일봉지표상 특이한 사항을 현재 객체에 담아준다
+        # example:
+        #       골든크로스가 몇 거래일전에 발생했다던가
+        #       현재 골든크로스 구간이라던가
+        #       일봉볼린저밴드가 어쩌고 저쩌고, 로직구현이 좀 복잡해서 보류:
+        # ======================================================
+
+
+        # 적전거래일 일봉기준 볼린저밴드 상하단 돌파 가격선을 세팅함
+        # percent는 몇프로 돌파하는지에 대한 threshold값을 얻기 위함
+        self.BBU_UP_10, self.BBU_LOW_10 = self._get_daily_bb_price(percent=0.1)
+        self.BBU_UP_20, self.BBU_LOW_20 = self._get_daily_bb_price(percent=0.2)
+
+
+
+
+
+
+
+    def simul_all_condition(self, condition_list):
+        '''
+
+        모든 컨디션을 돌려서, 컨디션에 부합하는 DATAFRAME을
+        리스트로 묶어서 반환함
+
+        :param condition_list:
+        :return: list of dataframe
+        '''
+        ret = []
+
+
+        for i_cond in condition_list:
+            cond_df = self.df_ohlc_realtime_filled.copy()
+            cond_df = cond_df[cond_df['DATE']==self.the_date]
+            flag=True
+            for col, cond in i_cond['day'].items():
+                cond_df = cond_df[self._operation(cond_df, col, cond[0], cond[1])]
+                if(len(cond_df)==0):
+                    flag=False
+                    break
+            if not flag:
+                break
+            for col, cond in i_cond['min'].items():
+                cond_df = cond_df[self._operation(cond_df, col, cond[0], cond[1])]
+                if(len(cond_df)==0):
+                    flag = False
+                    break
+            if ~flag:
+                ret.append(cond_df.copy())
+
+        #======================================================
+        # DEBUGGING 영역
+        #======================================================
+        # print(ret)
+        #======================================================
+        return ret
+
+    def _operation(self, df, col, operate, value):
+        '''
+
+
+
+        :param df:
+        :param col:
+        :param operate:
+        :param value:
+        :return:
+        '''
+
+        if(operate=='SMALLER'):
+            return df[col] < value
+        elif(operate=='BIGGER'):
+            return df[col] > value
+
+    def _get_daily_bb_price(self, percent):
+        '''
+        볼린저밴드 상하단 돌파 조건 가격을 얻는 함수
+        :return: 상단 / 하단
+
+        '''
+
+        U = self._cal_price_pierce_bbu_(self.sr_daily.BBU, self.sr_daily.BBL, percent)
+        D = self._cal_price_pierce_bbl_(self.sr_daily.BBU, self.sr_daily.BBL, percent)
+
+        return U,D
+
+    def _cal_price_pierce_bbu_(self, BBU, BBL, percent):
+        '''
+
+        :param BBU: 볼밴상단
+        :param BBL: 볼밴하단
+        :param cutoff: 볼밴하단 이탈율
+        :return: 볼밴하단 이탈의 가격
+        '''
+        return percent*(BBU-BBL)+BBU
+
+    def _cal_price_pierce_bbl_(self, BBU, BBL, percent):
+        '''
+
+        :param BBU: 볼밴상단
+        :param BBL: 볼밴하단
+        :param cutoff: 볼밴하단 이탈율
+        :return: 볼밴하단 이탈의 가격
+        '''
+        return percent*(BBU-BBL)+BBL
+
+
     # 자잘한 함수들, 아직 미구현
-    def set_recent_fluct_ratio_from_market_open(self):
-        # 시초가 대비 변동률
-        pass
-
-    def set_recent_fluct_ratio_from_prev_close(self):
-        # 시초가 대비 변동률
-        pass
-
-    def set_recent_top_n_volume_per_stick(self, n=10, window=500):
-        # 최근 500개 5분봉중 거래량 상위 봉 세팅
-        pass
+    # def set_recent_fluct_ratio_from_market_open(self):
+    #     # 시초가 대비 변동률
+    #     pass
+    #
+    # def set_recent_fluct_ratio_from_prev_close(self):
+    #     # 시초가 대비 변동률
+    #     pass
+    #
+    # def set_recent_top_n_volume_per_stick(self, n=10, window=500):
+    #     # 최근 500개 5분봉중 거래량 상위 봉 세팅
+    #     pass
 
     # ==============================================================================================

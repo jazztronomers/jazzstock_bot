@@ -10,13 +10,16 @@
 
 ## 사용법:
 
+http://rubenchu.blog.me/222011722841
+자세히는 위 링크에 정리하였음.
+
 0) 기본적으로 python3.6.9를 사용한다.
 1) requirements.txt에 있는 패키지들을 설치한다.
 2) config/config_template.py 에 본인의 db접속정보를 입력하고, config.py 로 renaming한다.
 3) main_crawlnaver_debug.py 를 실행해보고 대충 어떤 느낌인지 파악한다
 4) 로직을 추가구현하여 실시간 알람봇으로 사용할때는 main_crawlnaver_run.py를 사용한다, 장전에 실행되도록 예약을 걸어두면 좋을듯하다.
 
-
+** 아직은 클래스구조 변화가 많이 일어남, 7월중순까지 구조를 freezing 하는게 목표. 
 
 ## 계획 :
 

@@ -1,0 +1,5 @@
+import os
+
+_PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+
+

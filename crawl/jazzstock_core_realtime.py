@@ -1,11 +1,8 @@
 import pandas as pd
 import time
 import warnings
-import common.connector_db as db
-import config.config as cf
 from datetime import datetime
-from crawl.jazzstock_object_crawling import JazzstockCrawlingObject
-from crawl.jazzstock_object_trading import JazzstockTradingObject
+from crawl.jazzstock_object import JazzstockObject
 
 
 pd.options.display.max_rows = 500
@@ -17,13 +14,12 @@ tdic = {}
 for tk, t1, t5, t15 in sorted(timedf.values.tolist()):
     tdic[str(tk).zfill(6)] = {'T1': str(t1).zfill(6), 'T5': str(t5).zfill(6), 'T15': str(t15).zfill(6)}
 
-class JazzstockCoreCrawlSlave:
+class JazzstockCoreRealtime:
 
-    def __init__(self, stockcode_list, is_debug=False):
+    def __init__(self, stockcode_list, the_date, the_date_index):
         self.stock_dict = {}
-        self.is_debug=is_debug
         for stockcode in stockcode_list:
-            self.stock_dict[stockcode] = JazzstockCrawlingObject(stockcode, stockcode, debug=self.is_debug)
+            self.stock_dict[stockcode] = JazzstockObject(stockcode, the_date=the_date, the_date_index=the_date_index)
 
 
     def initialize_dataframe(self):
@@ -58,16 +54,14 @@ class JazzstockCoreCrawlSlave:
         pass
 
 
-class JazzstockCoreCrawlSlaveNaver(JazzstockCoreCrawlSlave):
+class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
 
-    def __init__(self, stockcode_list=[], is_debug=False, debug_date=None):
-
-        super().__init__(stockcode_list, is_debug)
+    def __init__(self, stockcode_list=[], the_date = datetime.now().date(), the_date_index=0):
+        super().__init__(stockcode_list, the_date, the_date_index)
 
         # OPTIONAL ==================================================================
         # NETWORK PARAMS, STANDALONE에서는 신경안써도됨
         self.MASTERIP = '127.0.0.1'
-        self.debug_date = debug_date
         # TELEGRAM ================================================
         # self.TOKEN = cf.TELEBOT_TOKEN
         # self.RECEIVER = cf.TELEBOT_ID
@@ -110,11 +104,12 @@ class JazzstockCoreCrawlSlaveNaver(JazzstockCoreCrawlSlave):
                 ntime = '%s%s00' % (str(j).zfill(2), str(i).zfill(2))
                 for eachcode in self.stock_dict.keys():
                     try:
-                        self.stock_dict[eachcode].set_ohlc_min_from_naver(is_debug=ntime, debug_date=self.debug_date)
+                        print(self.stock_dict[eachcode].the_date)
+                        self.stock_dict[eachcode].set_ohlc_min_from_naver(is_debug=ntime, debug_date=self.stock_dict[eachcode].the_date)
                     except:
                         print("*** CONNECTION ERROR")
                         break
-                    self.stock_dict[eachcode].set_candle_five(is_debug=ntime, debug_date=self.debug_date)
+                    self.stock_dict[eachcode].set_candle_five(is_debug=ntime)
                     self.stock_dict[eachcode].fill_index()
                     self.stock_dict[eachcode].check_status(logmode=1) # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하면됨.
                     
