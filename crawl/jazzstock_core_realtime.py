@@ -164,7 +164,6 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                             self.stock_dict[eachcode].set_candle_five()
                             self.stock_dict[eachcode].fill_index()
                             msg = self.stock_dict[eachcode].check_status(logmode=1) # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하면됨
-                            print(' * ', type(msg))
                             if msg is not None:
                                 self.send_message_telegram(msg)
 
@@ -193,12 +192,12 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         :return:
         '''
         
-        if self.RECEIVER:
+        if self.RECEIVER and self.TOKEN:
 
             stockname = message.K
             self.BOT.sendMessage(self.RECEIVER, '%s' % (message))
         else:
-            print(' * INFO: RECEIVER NOT SPECIFIED')
+            print(' * INFO: TELEGRAM TOKEN OR MESSAGE RECEIVER NOT SPECIFIED')
             
             
     def send_message_master(self):

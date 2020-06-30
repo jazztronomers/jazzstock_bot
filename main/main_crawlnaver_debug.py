@@ -11,7 +11,7 @@ if __name__=='__main__':
 
     else:
         # stockcode_list = ['079940', '093320', '035420', '060250', '131370', '023590', '239610', '035720', '036800', '119860']
-        stockcode_list = ['131370', '079940']
+        stockcode_list = ['093320']
         # stockcode_list = db.selectSingleColumn('SELECT STOCKCODE FROM jazzdb.T_UNIVERSE_LIST WHERE DATE = "2020-04-28" LIMIT 40')
 
 

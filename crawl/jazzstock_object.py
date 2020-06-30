@@ -291,22 +291,40 @@ class JazzstockObject:
             print('\n5분봉:')
             print(self.df_ohlc_realtime_filled[columns].tail(5))
             
+            '''
+            OPERATION :
+            
+            일봉 및 5분봉의 특정 컬럼 대한 OPERATION 수행시 VALUE에 대한 요구사항
+            SMALLER : args[0] (NUMERIC)
+            BIGGER  : args[0] (NUMERIC)
+            BETWEEN : args[0], args[1] (SMALL, BIG NUMBER)
+            TRUE    : no need argument
+            
+            COLUMN LIST:
+            
+            day : OPEN, HIGH, LOW, CLOSE, K, D, J
+            min : 
+            VALUE LIST:
+            
+            '''
 
             condition_simple = {
-                'day': {
-                    'CLOSE': ('SMALLER', 60000)
-                },
-                'min': {
-                    'D': ('SMALLER',0.9)
-                }
-            } 
+                'CLOSE': ('SMALLER', self.PREV_1_LOW, 63500),
+                # 'CLOSE': ('SMALLER_MINMAX_P', self.obj.PREV_1_BBU, self.obj.PREV_1_BBL, 0),
+                'D': ('SMALLER', 0.9)
+            }
+
+
             condition_list = [condition_simple]
             ret = self.simul_all_condition(condition_list, n=1)
-            if ret:
-                print('- '*20)
-                print(' * SIGNAL %s'%(ret[0][['TIME','K','D','J']]))
-
             print('='*100)
+
+            if(len(ret[0])>0):
+                print('======================')
+                print(ret[0])
+                print('======================')
+
+
             return ret[0][['TIME','K','D','J']]
             pass
             
@@ -334,6 +352,8 @@ class JazzstockObject:
         self.PREV_1_J = self.sr_daily['J']
         self.PREV_1_BBP = self.sr_daily['BBP']
         self.PREV_1_BBW = self.sr_daily['BBW']
+        self.PREV_1_BBU = self.sr_daily['BBU']
+        self.PREV_1_BBL = self.sr_daily['BBL']
         self.PREV_1_RSI = self.sr_daily['RSI']
 
 
@@ -346,7 +366,12 @@ class JazzstockObject:
         self.PREV_5_K_LOW =  self.df_ohlc_day.tail(5).K.min()
 
 
-        print(self.PREV_1_CLOSE, self.PREV_5_HIGH, self.PREV_1_K, self.PREV_5_K_HIGH, self.PREV_5_K_LOW)
+        # 최근 20거래일간 볼린저밴드 관련
+        # 하단보다 종가가 낮았던 일수
+        # 뭐이런거
+
+
+        # print(self.PREV_1_CLOSE, self.PREV_5_HIGH, self.PREV_1_K, self.PREV_5_K_HIGH, self.PREV_5_K_LOW)
 
         # ======================================================
         # 직전 N일 동안 일봉지표상 특이한 사항을 현재 객체에 담아준다
@@ -383,23 +408,15 @@ class JazzstockObject:
         for i_cond in condition_list:
 
             if n!= -1:
-                cond_df = self.df_ohlc_realtime_filled.tail(1).copy()
-                print('^_^')
+                cond_df = self.df_ohlc_realtime_filled.tail(n).copy()
             else:
                 cond_df = self.df_ohlc_realtime_filled.copy()
                 cond_df = cond_df[cond_df['DATE']==self.the_date]
             flag=True
-            for col, cond in i_cond['day'].items():
-                cond_df = cond_df[self._operation(cond_df, col, cond[0], cond[1])]
+            for col, cond in i_cond.items():
+                cond_df = cond_df[self._operation(cond_df, col, cond[0], *cond[1:])]
                 if(len(cond_df)==0):
                     flag=False
-                    break
-            if not flag:
-                break
-            for col, cond in i_cond['min'].items():
-                cond_df = cond_df[self._operation(cond_df, col, cond[0], cond[1])]
-                if(len(cond_df)==0):
-                    flag = False
                     break
             if ~flag:
                 ret.append(cond_df.copy())
@@ -411,7 +428,7 @@ class JazzstockObject:
         #======================================================
         return ret
 
-    def _operation(self, df, col, operate, value):
+    def _operation(self, df, col, operate, *args):
         '''
 
 
@@ -423,10 +440,25 @@ class JazzstockObject:
         :return:
         '''
 
-        if(operate=='SMALLER'):
-            return df[col] < value
-        elif(operate=='BIGGER'):
-            return df[col] > value
+        if (operate == 'SMALLER'):
+            return df[col] < args[0]
+        elif (operate == 'BIGGER'):
+            return df[col] > args[0]
+        elif (operate == 'BETWEEN'):
+            return (args[1] >= df[col]) & (df[col] >= args[0])
+
+        elif (operate == 'SMALLER_P'):
+            return df[col] < args[0] * (1 - args[1])
+        elif (operate == 'BIGGER_P'):
+            return df[col] > args[0] * (1 + args[1])
+
+        elif (operate == 'BIGGER_MINMAX_P'):
+            return df[col] > (max(args[1], args[0]) - min(args[1], args[0])) * args[2] + min(args[1], args[0])
+        elif (operate == 'SMALLER_MINMAX_P'):
+            print((max(args[1], args[0]) - min(args[1], args[0])) * args[2] + min(args[1], args[0]))
+            return df[col] < (max(args[1], args[0]) - min(args[1], args[0])) * args[2] + min(args[1], args[0])
+        elif (operate == 'TRUE'):
+            return df[col] == 'True'
 
     def _get_daily_bb_price(self, percent):
         '''

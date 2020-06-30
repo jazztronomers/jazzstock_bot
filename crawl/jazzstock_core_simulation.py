@@ -73,12 +73,9 @@ class JazzstockCoreSimulationCustom(JazzstockCoreSimulation):
 
         # 일봉기준으로 전일 저가보다 낮으면서, 5분봉기준 STOCHASTIC D 가 0.2 이하인 종목을 추출하는 조건
         condition_simple = {
-            'day': {
-                'CLOSE': ('SMALLER', self.obj.PREV_1_LOW)
-            },
-            'min': {
-                'D': ('SMALLER',0.2)
-            }
+            'CLOSE': ('SMALLER_P', self.obj.PREV_1_LOW, 0.01),
+            'CLOSE': ('SMALLER_MINMAX_P', self.obj.PREV_1_BBU, self.obj.PREV_1_BBL, 0),
+            'D': ('SMALLER',0.5)
         }
         # ===================================================================
 
@@ -136,7 +133,7 @@ if __name__=='__main__':
     for each_idx in range (34,0,-1):
 
         the_date = index_to_date(each_idx)
-        t = JazzstockCoreSimulationCustom('093320', the_date=the_date, the_date_index=each_idx)
+        t = JazzstockCoreSimulationCustom('036800', the_date=the_date, the_date_index=each_idx)
         rt = t.simulate()
 
         if rt and rt[1] > 0:
