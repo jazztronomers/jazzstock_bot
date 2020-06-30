@@ -7,3 +7,4 @@ pandas==1.0.5
 PyYAML==3.12
 requests==2.20.0
 tabulate==0.8.7
+telepot==12.0
