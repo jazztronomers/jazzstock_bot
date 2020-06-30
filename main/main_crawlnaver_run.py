@@ -13,17 +13,18 @@ if __name__=='__main__':
 
     else:
         # stockcode_list = ['079940', '093320', '035420', '060250', '131370', '023590', '239610', '035720', '036800', '119860']
-        stockcode_list = ['079940', '093320']
-        # stockcode_list = db.selectSingleColumn("SELECT STOCKCODE "
-        #                                        "FROM jazzdb.T_STOCK_SND_ANALYSIS_RESULT_TEMP "
-        #                                        "JOIN jazzdb.T_DATE_INDEXED USING (DATE) "
-        #                                        "JOIN jazzdb.T_STOCK_MC USING(STOCKCODE, DATE) "
-        #                                        "WHERE 1=1 "
-        #                                        "AND CNT=0 "
-        #                                        "AND MC > 1 "
-        #                                        "ORDER BY YG1 "
-        #                                        "LIMIT 60 ")
+        # stockcode_list = ['079940', '093320']
+        stockcode_list = db.selectSingleColumn("SELECT STOCKCODE "
+                                                "FROM jazzdb.T_STOCK_SND_ANALYSIS_RESULT_TEMP "
+                                                "JOIN jazzdb.T_DATE_INDEXED USING (DATE) "
+                                                "JOIN jazzdb.T_STOCK_MC USING(STOCKCODE, DATE) "
+                                                "WHERE 1=1 "
+                                                "AND CNT=0 "
+                                                "AND MC > 1 "
+                                                "ORDER BY YG1 "
+                                                "LIMIT 60 ")
 
+    print(stockcode_list)
     the_date = datetime.now().date()
     the_date_index = 0
 

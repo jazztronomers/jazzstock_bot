@@ -1,6 +1,8 @@
 import pandas as pd
 import time
 import warnings
+import config.config as cf
+import telepot
 from datetime import datetime
 from crawl.jazzstock_object import JazzstockObject
 
@@ -8,8 +10,10 @@ from crawl.jazzstock_object import JazzstockObject
 pd.options.display.max_rows = 500
 pd.options.display.max_columns= 500
 warnings.filterwarnings('ignore')
-timedf = pd.read_csv('../config/time.csv', dtype=str)
-
+try:
+	timedf = pd.read_csv('../config/time.csv', dtype=str)
+except:
+	timedf = pd.read_csv('config/time.csv', dtype=str)
 tdic = {}
 for tk, t1, t5, t15 in sorted(timedf.values.tolist()):
     tdic[str(tk).zfill(6)] = {'T1': str(t1).zfill(6), 'T5': str(t5).zfill(6), 'T15': str(t15).zfill(6)}
@@ -63,9 +67,9 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         # NETWORK PARAMS, STANDALONE에서는 신경안써도됨
         self.MASTERIP = '127.0.0.1'
         # TELEGRAM ================================================
-        # self.TOKEN = cf.TELEBOT_TOKEN
-        # self.RECEIVER = cf.TELEBOT_ID
-        # self.BOT = telepot.Bot(self.TOKEN)
+        self.TOKEN = cf.TELEBOT_TOKEN
+        self.RECEIVER = cf.TELEBOT_ID
+        self.BOT = telepot.Bot(self.TOKEN)
         # =========================================================
 
 
@@ -82,6 +86,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         for eachcode in self.stock_dict.keys():
             self.stock_dict[eachcode].set_ohlc_min_from_db(cntto=cntto)
             self.stock_dict[eachcode].set_ohlc_day_from_db_include_index(cntto=cntto)
+            self.stock_dict[eachcode].set_prev_day_index()
             listdf = listdf.append(self.stock_dict[eachcode].get_info())
 
         print('-'*100)
@@ -111,8 +116,11 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                         break
                     self.stock_dict[eachcode].set_candle_five(is_debug=ntime)
                     self.stock_dict[eachcode].fill_index()
-                    self.stock_dict[eachcode].check_status(logmode=1) # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하면됨.
+                    msg = self.stock_dict[eachcode].check_status(logmode=1) # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하면됨
                     
+                    print(' * ', type(msg))
+
+                    self.send_message_telegram(msg)
                     time.sleep(0.1) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한종목당 0.1초 슬립
                 
                 print('\n\n  sleep 30 seconds ....\n\n')
@@ -155,7 +163,10 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                                 self.stock_dict[eachcode].set_ohlc_min_from_naver()
                             self.stock_dict[eachcode].set_candle_five()
                             self.stock_dict[eachcode].fill_index()
-                            self.stock_dict[eachcode].check_status(logmode=1)
+                            msg = self.stock_dict[eachcode].check_status(logmode=1) # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하면됨
+                            print(' * ', type(msg))
+                            if msg is not None:
+                                self.send_message_telegram(msg)
 
                         print('\n')
                         print(datetime.now()-st)
@@ -183,7 +194,9 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         '''
         
         if self.RECEIVER:
-            self.bot.sendMessage(self.RECEIVER, '%s' % (message))
+
+            stockname = message.K
+            self.BOT.sendMessage(self.RECEIVER, '%s' % (message))
         else:
             print(' * INFO: RECEIVER NOT SPECIFIED')
             

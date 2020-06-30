@@ -7,8 +7,11 @@ import util.index_calculator as ic
 from datetime import datetime
 
 warnings.filterwarnings('ignore')
-timedf = pd.read_csv('../config/time.csv', dtype=str)
-
+try:
+	timedf = pd.read_csv('../config/time.csv', dtype=str)
+except:
+	timedf = pd.read_csv('config/time.csv', dtype=str)
+	
 tdic = {}
 for tk, t1, t5, t15 in sorted(timedf.values.tolist()):
     tdic[str(tk).zfill(6)] = {'T1': str(t1).zfill(6), 'T5': str(t5).zfill(6), 'T15': str(t15).zfill(6)}
@@ -287,7 +290,24 @@ class JazzstockObject:
             
             print('\n5분봉:')
             print(self.df_ohlc_realtime_filled[columns].tail(5))
+            
+
+            condition_simple = {
+                'day': {
+                    'CLOSE': ('SMALLER', 60000)
+                },
+                'min': {
+                    'D': ('SMALLER',0.9)
+                }
+            } 
+            condition_list = [condition_simple]
+            ret = self.simul_all_condition(condition_list, n=1)
+            if ret:
+                print('- '*20)
+                print(' * SIGNAL %s'%(ret[0][['TIME','K','D','J']]))
+
             print('='*100)
+            return ret[0][['TIME','K','D','J']]
             pass
             
             
@@ -348,7 +368,7 @@ class JazzstockObject:
 
 
 
-    def simul_all_condition(self, condition_list):
+    def simul_all_condition(self, condition_list, n=-1):
         '''
 
         모든 컨디션을 돌려서, 컨디션에 부합하는 DATAFRAME을
@@ -361,8 +381,13 @@ class JazzstockObject:
 
 
         for i_cond in condition_list:
-            cond_df = self.df_ohlc_realtime_filled.copy()
-            cond_df = cond_df[cond_df['DATE']==self.the_date]
+
+            if n!= -1:
+                cond_df = self.df_ohlc_realtime_filled.tail(1).copy()
+                print('^_^')
+            else:
+                cond_df = self.df_ohlc_realtime_filled.copy()
+                cond_df = cond_df[cond_df['DATE']==self.the_date]
             flag=True
             for col, cond in i_cond['day'].items():
                 cond_df = cond_df[self._operation(cond_df, col, cond[0], cond[1])]
