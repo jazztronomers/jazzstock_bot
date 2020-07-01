@@ -1,6 +1,7 @@
 import sys
 import os
 import common.connector_db as db
+import time
 from datetime import datetime
 from crawl.jazzstock_core_realtime import JazzstockCoreRealtimeNaver
 
@@ -21,10 +22,11 @@ if __name__=='__main__':
                                                 "WHERE 1=1 "
                                                 "AND CNT=0 "
                                                 "AND MC > 1 "
-                                                "ORDER BY YG1 "
-                                                "LIMIT 60 ")
+                                                "ORDER BY YG5 "
+                                                "LIMIT 80 ")
 
-    print(stockcode_list)
+    print('LEN : %s'%(len(stockcode_list)))
+    time.sleep(4)
     the_date = datetime.now().date()
     the_date_index = 0
 

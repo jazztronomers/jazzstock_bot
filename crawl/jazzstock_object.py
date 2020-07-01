@@ -253,8 +253,7 @@ class JazzstockObject:
     # 가장최근 분봉정보를 출력하는 함수
     def check_status(self, columns=['DATE','TIME','BBP','BBW','K','D','J'], logmode=0):
         '''
-        :param min_1_line
-        :param min_5_line
+        
         :param columns 체크할 컬럼명
         :param logmode: 로깅모드, 콘솔에다 찍는 형태
         
@@ -284,12 +283,12 @@ class JazzstockObject:
         # HUMAN READABLE : MULTI LINE
         elif logmode == 1:
             print(self.stockname)
-            print('-'*80)
-            print('1분단위 체결정보:')
-            print(self.df_min_raw_naver.tail(5))
+            # print('-'*80)
+#             print('1분단위 체결정보:')
+#             print(self.df_min_raw_naver.tail(5))
             
-            print('\n5분봉:')
-            print(self.df_ohlc_realtime_filled[columns].tail(5))
+#             print('\n5분봉:')
+#             print(self.df_ohlc_realtime_filled[columns].tail(5))
             
             '''
             OPERATION :
@@ -309,9 +308,9 @@ class JazzstockObject:
             '''
 
             condition_simple = {
-                'CLOSE': ('SMALLER', self.PREV_1_LOW, 63500),
+                'CLOSE': ('SMALLER', self.PREV_1_LOW),
                 # 'CLOSE': ('SMALLER_MINMAX_P', self.obj.PREV_1_BBU, self.obj.PREV_1_BBL, 0),
-                'D': ('SMALLER', 0.9)
+                'D': ('SMALLER', 0.2)
             }
 
 
@@ -320,12 +319,17 @@ class JazzstockObject:
             print('='*100)
 
             if(len(ret[0])>0):
-                print('======================')
-                print(ret[0])
-                print('======================')
+                
+                print(' * jazzstock_object.checkstatus')                
+                rtdic = ret[0].to_dict('index')
+                rtdic = rtdic[list(rtdic.keys())[0]]
+                rtdic['STOCKNAME']=self.stockname
 
+#                 for k in sorted(rtdic.keys()):
+#                 print(k, rtdic[k])
 
-            return ret[0][['TIME','K','D','J']]
+                return rtdic
+            
             pass
             
             

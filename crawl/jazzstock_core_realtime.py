@@ -183,7 +183,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                 print(' * INFO: MARKET CLOSED')
                 break
 
-    def send_message_telegram(self, message='TEST'):
+    def send_message_telegram(self, message_dic='TEST'):
         '''
 
         탤래그램으로 메세지를 직접 보내는 함수
@@ -193,8 +193,18 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         '''
         
         if self.RECEIVER and self.TOKEN:
+            
+            message = '%s / %s\nKDJ | %.3f / %.3f / %.3f\nBPW | %.3f / %.3f\nVMR | %.3f / %.3f'%(message_dic['STOCKNAME'],
+                              message_dic['TIME'],
+                              message_dic['K'],
+                              message_dic['D'],
+                              message_dic['J'],
+                              message_dic['BBP'],      
+                              message_dic['BBW'],
+                              message_dic['VSMAR5'],
+                              message_dic['VSMAR20'],)
 
-            stockname = message.K
+            
             self.BOT.sendMessage(self.RECEIVER, '%s' % (message))
         else:
             print(' * INFO: TELEGRAM TOKEN OR MESSAGE RECEIVER NOT SPECIFIED')
