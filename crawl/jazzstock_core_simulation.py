@@ -1,13 +1,15 @@
 import common.connector_db as db
 import util.index_calculator as ic
 import pandas as pd
+import config.condition as cf
 from crawl.jazzstock_object import JazzstockObject
+
 
 pd.options.display.max_rows = 1000
 pd.options.display.max_columns= 500
 
 
-
+condition_dict = cf.TESTCOND 
 # =====================================================================================
 # 추가구현시 CLASS, FUNCTION 네이밍 참조:
 # =====================================================================================
@@ -72,14 +74,17 @@ class JazzstockCoreSimulationCustom(JazzstockCoreSimulation):
 
 
         # 일봉기준으로 전일 저가보다 낮으면서, 5분봉기준 STOCHASTIC D 가 0.2 이하인 종목을 추출하는 조건
-        condition_simple = {
-            'CLOSE': ('SMALLER_P', self.obj.PREV_1_LOW, 0.01),
-            'CLOSE': ('SMALLER_MINMAX_P', self.obj.PREV_1_BBU, self.obj.PREV_1_BBL, 0),
-            'D': ('SMALLER',0.5)
-        }
+#         condition_simple = {
+#             'CLOSE': ('SMALLER_P', self.obj.PREV_1_LOW, 0.01),
+#             'CLOSE': ('SMALLER_MINMAX_P', self.obj.PREV_1_BBU, self.obj.PREV_1_BBL, 0),
+#             'D': ('SMALLER',0.5)
+#         }
+        
+        
+        condition_dict = cf.TESTCOND 
         # ===================================================================
 
-        self.condition_list = [condition_simple] # 순서중요, 순서대로 iteration 돌거
+        self.condition_list = condition_dict # 순서중요, 순서대로 iteration 돌거
 
 
 
@@ -94,20 +99,10 @@ class JazzstockCoreSimulationCustom(JazzstockCoreSimulation):
         ret = self.obj.simul_all_condition(self.condition_list)
 
         if(ret):
-            print('*', self.obj.the_date, ret[0].CLOSE.mean(), ret[0].CLOSE.count())
+            print('*', self.obj.the_date, ret[0].CLOSE.mean(), ret[0].CLOSE.count(), len(ret))
             return ret[0].CLOSE.mean(), int(ret[0].CLOSE.count())
         else:
             return False
-
-
-
-
-
-
-
-
-
-
 
 
 def date_to_index(date):
@@ -130,8 +125,8 @@ if __name__=='__main__':
     # t.simulate()
 
     s, c = 0, 0
-    for each_idx in range (34,0,-1):
-
+    
+    for each_idx in range (100,0,-1):
         the_date = index_to_date(each_idx)
         t = JazzstockCoreSimulationCustom('036800', the_date=the_date, the_date_index=each_idx)
         rt = t.simulate()
@@ -139,5 +134,4 @@ if __name__=='__main__':
         if rt and rt[1] > 0:
             s = s+(rt[0]*rt[1])
             c = c+rt[1]
-
-    print(s/c)
+            print(s/c)

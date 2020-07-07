@@ -1,9 +1,11 @@
 import time
 import requests
 import warnings
+import copy
 import pandas as pd
 import common.connector_db as db
 import util.index_calculator as ic
+import config.condition as cf
 from datetime import datetime
 
 warnings.filterwarnings('ignore')
@@ -12,6 +14,8 @@ try:
 except:
 	timedf = pd.read_csv('config/time.csv', dtype=str)
 	
+condition_dict = cf.TESTCOND    
+
 tdic = {}
 for tk, t1, t5, t15 in sorted(timedf.values.tolist()):
     tdic[str(tk).zfill(6)] = {'T1': str(t1).zfill(6), 'T5': str(t5).zfill(6), 'T15': str(t15).zfill(6)}
@@ -56,7 +60,8 @@ class JazzstockObject:
         self.df_ohlc_min = pd.DataFrame() 
         self.df_ohlc_realtime = pd.DataFrame()
         self.df_ohlc_realtime_filled = pd.DataFrame()
-
+        self.dict_prev = dict()  # 직전거래일 및 최근 몇 거래일간의 정보를 담는 dictionary
+        
         self.df_min_raw_naver = pd.DataFrame(columns=['체결시각', '체결가', '전일비', '매도', '매수', '거래량', '변동량'])
         self.OPEN = None
 
@@ -171,7 +176,7 @@ class JazzstockObject:
                 self.stockcode, ndate, ntime, pageidx)
 
 
-            # print(url)
+            print(url)
 
             htmls = requests.get(url).text
             ndf = pd.read_html(htmls, header=0)[0]
@@ -207,10 +212,10 @@ class JazzstockObject:
                 break
 
     @_check_running_time
-    def set_candle_five(self, is_debug=False, debug_date=False):
+    def set_candle_five(self, is_debug=False):
 
         rtdf = self.df_ohlc_min.copy()
-        DATE = debug_date or str(datetime.now().date())
+        DATE = self.the_date or str(datetime.now().date())
         ddf = pd.merge(self.df_min_raw_naver, timedf, on='TIMEKEY')
         ddf['DATE'] = DATE
         ddf = ddf[['DATE', 'TIMEKEY', 'T5', 'CLOSE', 'VOLFLUC']]
@@ -222,6 +227,9 @@ class JazzstockObject:
             HIGH = temp.CLOSE.max()
             LOW = temp.CLOSE.min()
             CLOSE = temp.CLOSE.values[-1]
+            
+            # PR
+            
             VOLUME = pd.to_numeric(temp.VOLFLUC).sum()
 
             rtdf.loc[len(rtdf)] = [DATE, each,
@@ -251,7 +259,7 @@ class JazzstockObject:
         return pd.DataFrame(temp).T[['STOCKNAME','DATE', 'CLOSE','BBP','BBW','K','D','J','VOLUME','RSI']]
 
     # 가장최근 분봉정보를 출력하는 함수
-    def check_status(self, columns=['DATE','TIME','BBP','BBW','K','D','J'], logmode=0):
+    def check_status(self, columns=['DATE','TIME','BBP','BBW','K','D','J', 'CLOSE', 'TRADINGVALUE'], logmode=0):
         '''
         
         :param columns 체크할 컬럼명
@@ -282,55 +290,33 @@ class JazzstockObject:
                 
         # HUMAN READABLE : MULTI LINE
         elif logmode == 1:
-            print(self.stockname)
+            print('%s (%s)'%(self.stockname, self.stockcode))
             # print('-'*80)
-#             print('1분단위 체결정보:')
-#             print(self.df_min_raw_naver.tail(5))
+            print('1분단위 체결정보:')
+            print(self.df_min_raw_naver.tail(5))
             
-#             print('\n5분봉:')
-#             print(self.df_ohlc_realtime_filled[columns].tail(5))
+            print('\n5분봉:')
+            print(self.df_ohlc_realtime_filled[columns].tail(5))
             
-            '''
-            OPERATION :
-            
-            일봉 및 5분봉의 특정 컬럼 대한 OPERATION 수행시 VALUE에 대한 요구사항
-            SMALLER : args[0] (NUMERIC)
-            BIGGER  : args[0] (NUMERIC)
-            BETWEEN : args[0], args[1] (SMALL, BIG NUMBER)
-            TRUE    : no need argument
-            
-            COLUMN LIST:
-            
-            day : OPEN, HIGH, LOW, CLOSE, K, D, J
-            min : 
-            VALUE LIST:
-            
-            '''
-
-            condition_simple = {
-                'CLOSE': ('SMALLER', self.PREV_1_LOW),
-                # 'CLOSE': ('SMALLER_MINMAX_P', self.obj.PREV_1_BBU, self.obj.PREV_1_BBL, 0),
-                'D': ('SMALLER', 0.2)
-            }
-
-
-            condition_list = [condition_simple]
-            ret = self.simul_all_condition(condition_list, n=1)
+    
+            # print(self.df_ohlc_realtime_filled.columns)
+        
+            global condition_dict
+            ret = self.simul_all_condition(condition_dict, n=1)
             print('='*100)
-
-            if(len(ret[0])>0):
-                
-                print(' * jazzstock_object.checkstatus')                
+    
+    
+            if(len(ret)>0):            
                 rtdic = ret[0].to_dict('index')
                 rtdic = rtdic[list(rtdic.keys())[0]]
                 rtdic['STOCKNAME']=self.stockname
-
-#                 for k in sorted(rtdic.keys()):
-#                 print(k, rtdic[k])
-
+                rtdic['STOCKCODE']=self.stockcode
                 return rtdic
             
-            pass
+            
+            else:
+                return None
+            
             
             
         elif logmode == 2:
@@ -346,36 +332,12 @@ class JazzstockObject:
         :return:
         '''
 
-        # 직전거래일 정보를 한땀한땀 현재 객체에 담아준다
-        self.PREV_1_OPEN = self.sr_daily['OPEN']
-        self.PREV_1_CLOSE = self.sr_daily['CLOSE']
-        self.PREV_1_HIGH = self.sr_daily['HIGH']
-        self.PREV_1_LOW = self.sr_daily['LOW']
-        self.PREV_1_K = self.sr_daily['K']
-        self.PREV_1_D = self.sr_daily['D']
-        self.PREV_1_J = self.sr_daily['J']
-        self.PREV_1_BBP = self.sr_daily['BBP']
-        self.PREV_1_BBW = self.sr_daily['BBW']
-        self.PREV_1_BBU = self.sr_daily['BBU']
-        self.PREV_1_BBL = self.sr_daily['BBL']
-        self.PREV_1_RSI = self.sr_daily['RSI']
-
-
-        # 직전 5거래일간의 지표상 고점, 저점 등을 기록한다
-
-        self.PREV_5_OPEN = int(self.df_ohlc_day.tail(5).head(1).OPEN)
-        self.PREV_5_HIGH = self.df_ohlc_day.tail(5).HIGH.max()
-        self.PREV_5_LOW  = self.df_ohlc_day.tail(5).LOW.min()
-        self.PREV_5_K_HIGH  = self.df_ohlc_day.tail(5).K.max()
-        self.PREV_5_K_LOW =  self.df_ohlc_day.tail(5).K.min()
-
-
-        # 최근 20거래일간 볼린저밴드 관련
-        # 하단보다 종가가 낮았던 일수
-        # 뭐이런거
-
-
-        # print(self.PREV_1_CLOSE, self.PREV_5_HIGH, self.PREV_1_K, self.PREV_5_K_HIGH, self.PREV_5_K_LOW)
+        
+        # 0704: 직전거래일 정보는 self에 담을게 아니라, dictionary에 담아주는게
+        # 향후 조건식 만들때 편하다 
+        
+        for k,v in self.sr_daily.to_dict().items():
+            self.dict_prev['01D_'+k] = v
 
         # ======================================================
         # 직전 N일 동안 일봉지표상 특이한 사항을 현재 객체에 담아준다
@@ -384,6 +346,45 @@ class JazzstockObject:
         #       현재 골든크로스 구간이라던가
         #       일봉볼린저밴드가 어쩌고 저쩌고, 로직구현이 좀 복잡해서 보류:
         # ======================================================
+
+        
+        df_ohlc_day_5_temp = self.df_ohlc_day.tail(5).copy()
+        
+        self.dict_prev['05D_HIGH'] = df_ohlc_day_5_temp.HIGH.max()
+        self.dict_prev['05D_LOW'] = df_ohlc_day_5_temp.LOW.min()
+        
+        df_ohlc_day_60_temp = self.df_ohlc_day.tail(60).copy()
+        
+        
+        self.dict_prev['60D_HIGH'] = df_ohlc_day_60_temp.HIGH.max()
+        self.dict_prev['60D_LOW'] = df_ohlc_day_60_temp.LOW.min()
+        
+        '''
+        01D_BBL 9692.0
+        01D_BBP 1.055
+        01D_BBU 13728.0
+        01D_BBW 0.345
+        01D_CLOSE 13950
+        01D_D 0.496
+        01D_DATE 2020-07-06
+        01D_HIGH 14350
+        01D_J 0.515
+        01D_K 0.606
+        01D_LOW 12950
+        01D_OPEN 13150
+        01D_RSI 72.18045112781954
+        01D_VOLUME 2405065    지난1거래일 거래량
+        01D_VOLUME_10 29830.0
+        01D_VOLUME_25 39849.25
+        01D_VOLUME_75 106803.75
+        01D_VOLUME_90 171390.5
+        05D_HIGH 15900
+        05D_LOW 12350
+        60D_HIGH 15900    지난 60거래일 고가
+        60D_LOW 9240      지난 60거래일 저가
+        
+        '''
+
 
 
         # 적전거래일 일봉기준 볼린저밴드 상하단 돌파 가격선을 세팅함
@@ -397,7 +398,7 @@ class JazzstockObject:
 
 
 
-    def simul_all_condition(self, condition_list, n=-1):
+    def simul_all_condition(self, condition_dict= condition_dict, n=-1):
         '''
 
         모든 컨디션을 돌려서, 컨디션에 부합하는 DATAFRAME을
@@ -409,20 +410,30 @@ class JazzstockObject:
         ret = []
 
 
-        for i_cond in condition_list:
-
+        for cond_name, cond_ori in sorted(condition_dict.items(), key=lambda key_value: key_value[0]):
+        
+            cond = copy.deepcopy(cond_ori)
             if n!= -1:
                 cond_df = self.df_ohlc_realtime_filled.tail(n).copy()
             else:
                 cond_df = self.df_ohlc_realtime_filled.copy()
                 cond_df = cond_df[cond_df['DATE']==self.the_date]
             flag=True
-            for col, cond in i_cond.items():
+            
+            
+            for col, cond in cond.items():
+                for i, each in enumerate(cond):
+                    if i>0 and isinstance(each, str):
+                        cond[i]=self._getter(cond_df, each)
+                        
+                
                 cond_df = cond_df[self._operation(cond_df, col, cond[0], *cond[1:])]
                 if(len(cond_df)==0):
                     flag=False
                     break
-            if ~flag:
+                else:
+                    cond_df['COND_NAME']=cond_name
+            if ~flag and len(cond_df)>0:
                 ret.append(cond_df.copy())
 
         #======================================================
@@ -431,6 +442,13 @@ class JazzstockObject:
         # print(ret)
         #======================================================
         return ret
+    
+    
+    def _getter(self, cond_df, col):        
+        if(col in cond_df.columns):    
+            return cond_df[col].copy()
+        pass
+        
 
     def _operation(self, df, col, operate, *args):
         '''

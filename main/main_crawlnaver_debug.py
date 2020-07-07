@@ -15,10 +15,11 @@ if __name__=='__main__':
         # stockcode_list = db.selectSingleColumn('SELECT STOCKCODE FROM jazzdb.T_UNIVERSE_LIST WHERE DATE = "2020-04-28" LIMIT 40')
 
 
-    print(stockcode_list)
+
     the_date_index = 0
     the_date = db.selectSingleValue('SELECT CAST(DATE AS CHAR) AS DATE FROM jazzdb.T_DATE_INDEXED WHERE CNT = %s'%(the_date_index)).replace('-','')
 
+    print(the_date)
 
     m = JazzstockCoreRealtimeNaver(stockcode_list = stockcode_list, the_date=the_date, the_date_index=the_date_index)
     m.debug()

@@ -109,22 +109,19 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                 ntime = '%s%s00' % (str(j).zfill(2), str(i).zfill(2))
                 for eachcode in self.stock_dict.keys():
                     try:
-                        print(self.stock_dict[eachcode].the_date)
                         self.stock_dict[eachcode].set_ohlc_min_from_naver(is_debug=ntime, debug_date=self.stock_dict[eachcode].the_date)
                     except:
                         print("*** CONNECTION ERROR")
                         break
                     self.stock_dict[eachcode].set_candle_five(is_debug=ntime)
                     self.stock_dict[eachcode].fill_index()
-                    msg = self.stock_dict[eachcode].check_status(logmode=1) # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하면됨
-                    
-                    print(' * ', type(msg))
-
-                    self.send_message_telegram(msg)
+                    msg = self.stock_dict[eachcode].check_status(logmode=1) # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하
+                    if msg is not None:
+                        self.send_message_telegram(msg)
                     time.sleep(0.1) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한종목당 0.1초 슬립
                 
                 print('\n\n  sleep 30 seconds ....\n\n')
-                time.sleep(30) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한그룹 다돌면 30초씩 슬립하도록
+                time.sleep(1) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한그룹 다돌면 30초씩 슬립하도록
 
 
     def run(self):
@@ -164,6 +161,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                             self.stock_dict[eachcode].set_candle_five()
                             self.stock_dict[eachcode].fill_index()
                             msg = self.stock_dict[eachcode].check_status(logmode=1) # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하면됨
+                            
                             if msg is not None:
                                 self.send_message_telegram(msg)
 
@@ -192,17 +190,27 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         :return:
         '''
         
+        for k,v in message_dic.items():
+            print(k, v)
+        
         if self.RECEIVER and self.TOKEN:
-            
-            message = '%s / %s\nKDJ | %.3f / %.3f / %.3f\nBPW | %.3f / %.3f\nVMR | %.3f / %.3f'%(message_dic['STOCKNAME'],
-                              message_dic['TIME'],
+            message = '%s (%s) : %s\nKDJ | %.3f / %.3f / %.3f\nBPW | %.3f / %.3f\nPMR | %.3f / %.3f / %.3f\nVMR | %.3f / %.3f / %.3f\n\nRULE: %s\nfinance.naver.com/item/main.nhn?code=%s'%(message_dic['STOCKNAME'],
+                              message_dic['STOCKCODE'],
+                              message_dic['TIME'],                                                                        
                               message_dic['K'],
                               message_dic['D'],
                               message_dic['J'],
                               message_dic['BBP'],      
                               message_dic['BBW'],
+                              message_dic['PSMAR5'],
+                              message_dic['PSMAR20'],
+                              message_dic['PSMAR60'],
                               message_dic['VSMAR5'],
-                              message_dic['VSMAR20'],)
+                              message_dic['VSMAR20'],
+                              message_dic['VSMAR60'],
+                              message_dic['COND_NAME'],
+                              message_dic['STOCKCODE'])
+                                                     
 
             
             self.BOT.sendMessage(self.RECEIVER, '%s' % (message))

@@ -18,7 +18,7 @@ def _check_running_time(func):
         end_time = time.perf_counter()
 
         runningtime = '%s | %s' % (func.__name__, end_time - start_time)
-        print(runningtime)
+        # print(runningtime)
         return result
     return new_func
 
@@ -42,12 +42,32 @@ def fillindex(ipdf):
     opdf = _stochastics(opdf, 12, 5, 5)
     opdf = _obv(opdf)
     opdf = _rsi(opdf)
+    opdf = _tradingvalue(opdf)
 
     # print('*********************************************')
     # print(opdf.columns)
     # print('*** DEBUG : DF LAST 5 ROW \n', opdf[['TIME','MA5','MA20','BBS','BBW','BBPD','CLOSE']].tail(1).round(3).values.tolist())
     # print('*********************************************')
     return opdf
+
+
+@_check_running_time
+def _tradingvalue(ipdf):
+    '''
+    :param ipdf:
+    
+    
+    :return 거래대금 컬럼 추가해서 리턴
+    
+    '''
+    
+    
+    opdf = ipdf.copy()
+    opdf['TRADINGVALUE']=opdf['CLOSE']*opdf['VOLUME']/100000000    # 억
+
+    return opdf
+
+
 
 
 @_check_running_time

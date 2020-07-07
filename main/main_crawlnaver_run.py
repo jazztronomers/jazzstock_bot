@@ -23,7 +23,7 @@ if __name__=='__main__':
                                                 "AND CNT=0 "
                                                 "AND MC > 1 "
                                                 "ORDER BY YG5 "
-                                                "LIMIT 80 ")
+                                                "LIMIT 100 ")
 
     print('LEN : %s'%(len(stockcode_list)))
     time.sleep(4)
