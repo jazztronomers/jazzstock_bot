@@ -153,7 +153,7 @@ class JazzstockObject:
         # 최초실행, 당일 분봉정보가 없는경우
         # 최초실행이 아니라면, 크롤링 주기가 10분이하이면 한페이지 만 긁어도 되니까 lastidx 도 1로
         if len(self.df_min_raw_naver) == 0:
-            lastidx, pageidx = 1000, 1
+            lastidx, pageidx = 60, 1
         else:
             lastidx, pageidx = 1, 1
         # ==========================================================================

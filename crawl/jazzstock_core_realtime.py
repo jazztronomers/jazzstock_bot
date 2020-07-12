@@ -84,10 +84,14 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         listdf = pd.DataFrame()
 
         for eachcode in self.stock_dict.keys():
-            self.stock_dict[eachcode].set_ohlc_min_from_db(cntto=cntto)
-            self.stock_dict[eachcode].set_ohlc_day_from_db_include_index(cntto=cntto)
-            self.stock_dict[eachcode].set_prev_day_index()
-            listdf = listdf.append(self.stock_dict[eachcode].get_info())
+            try:
+                self.stock_dict[eachcode].set_ohlc_min_from_db(cntto=cntto)
+                self.stock_dict[eachcode].set_ohlc_day_from_db_include_index(cntto=cntto)
+                self.stock_dict[eachcode].set_prev_day_index()
+                listdf = listdf.append(self.stock_dict[eachcode].get_info())
+            except:
+                print('ERROR INITIALIZING - %s'%(eachcode))
+                time.sleep(3)
 
         print('-'*100)
         print('전거래일 일봉기준 주가 및 지표 :')
@@ -104,8 +108,8 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         print(' * RUN DEBUGGING')
         self.initialize_dataframe(cntto=1)
         
-        for j in ['09','10','11']: # 9시부터 11시까지 1분단위로 디버깅
-            for i in range(60):
+        for j in ['09']: # 9시부터 9시 15분까지 1분단위로 디버깅
+            for i in range(15):
                 ntime = '%s%s00' % (str(j).zfill(2), str(i).zfill(2))
                 for eachcode in self.stock_dict.keys():
                     try:
@@ -194,22 +198,25 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
             print(k, v)
         
         if self.RECEIVER and self.TOKEN:
-            message = '%s (%s) : %s\nKDJ | %.3f / %.3f / %.3f\nBPW | %.3f / %.3f\nPMR | %.3f / %.3f / %.3f\nVMR | %.3f / %.3f / %.3f\n\nRULE: %s\nfinance.naver.com/item/main.nhn?code=%s'%(message_dic['STOCKNAME'],
-                              message_dic['STOCKCODE'],
-                              message_dic['TIME'],                                                                        
-                              message_dic['K'],
-                              message_dic['D'],
-                              message_dic['J'],
-                              message_dic['BBP'],      
-                              message_dic['BBW'],
-                              message_dic['PSMAR5'],
-                              message_dic['PSMAR20'],
-                              message_dic['PSMAR60'],
-                              message_dic['VSMAR5'],
-                              message_dic['VSMAR20'],
-                              message_dic['VSMAR60'],
-                              message_dic['COND_NAME'],
-                              message_dic['STOCKCODE'])
+            message = '%s (%s) : %s / '%(message_dic['STOCKNAME'], message_dic['STOCKCODE'],message_dic['TIME'])
+            message = message+'%s\n'%(message_dic['COND_NAME'])
+            message = message+'PMR | %.3f / %.3f / %.3f\n'%(message_dic['PSMAR5'],message_dic['PSMAR20'],message_dic['PSMAR60'])
+            message = message+'VMR | %.3f / %.3f / %.3f\n'%(message_dic['VSMAR5'],message_dic['VSMAR20'],message_dic['VSMAR60'])
+            message = message+'KDJ | %.3f / %.3f / %.3f\n' %(message_dic['K'], message_dic['D'],message_dic['J'])
+            message = message+'BPW | %.3f / %.3f\n\n'%(message_dic['BBP'], message_dic['BBW'])
+            message = message+'finance.naver.com/item/main.nhn?code=%s'%(message_dic['STOCKCODE'])
+            
+            
+#             %(message_dic['STOCKNAME'], message_dic['STOCKCODE'],message_dic['TIME'], 
+# #                               message_dic['COND_NAME'],         
+# #                               message_dic['PSMAR5'],message_dic['PSMAR20'],message_dic['PSMAR60'],
+# #                               message_dic['VSMAR5'],message_dic['VSMAR20'],message_dic['VSMAR60']
+# #                               message_dic['BBP'],      
+# #                               message_dic['BBW'],
+# #                               message_dic['K'],
+# #                               message_dic['D'],
+# #                               message_dic['J'],
+# #                               message_dic['STOCKCODE'])
                                                      
 
             

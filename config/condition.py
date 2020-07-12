@@ -14,14 +14,14 @@ TESTCOND = {
 
     'T01_HIGH_VOL_PSMAR20': {
         
-                    'VSMAR20':['BIGGER', 5],       # 5분봉 거래량 / 5분봉 20이평 거래량  > 2
+                    'VSMAR5':['BIGGER', 3],       # 5분봉 거래량 / 5분봉 20이평 거래량  > 2
                     'PSMAR20':['BIGGER', 0.03],
-                    'TRADINGVALUE':['BIGGER',5]    # 5분봉 거래대금 1억원 이상
+                    'TRADINGVALUE':['BIGGER',3]    # 5분봉 거래대금 1억원 이상
     },
     
     'T02_BIG_D_VOL': {
                     'D': ['BIGGER_P' , 'K', 2],   # 5분봉 STOCHASTIC D가 K 보다 200% 높음
-                    'VSMAR5':['BIGGER', 5]        # 5분봉 거래량 / 5분봉 5이평 거래량  > 2
+                    'VSMAR5':['BIGGER', 3]        # 5분봉 거래량 / 5분봉 5이평 거래량  > 2
     },
     
     'T03_HIGH_VOL': {
@@ -33,7 +33,7 @@ TESTCOND = {
 
     
     
-#     'T03_DEBUG': {
+#     'T04_DEBUG': {
 #                     'CLOSE': ['BIGGER', 10000], 
 #     },
 
