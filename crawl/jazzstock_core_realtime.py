@@ -109,12 +109,12 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         print(' * RUN DEBUGGING')
         self.initialize_dataframe(cntto=1)
         
-        for j in ['09']: # 9시부터 9시 15분까지 1분단위로 디버깅
-            for i in range(15):
+        for j in ['09','10','11','12','13','14']: # 9시부터 9시 15분까지 1분단위로 디버깅
+            for i in range(60):
                 ntime = '%s%s00' % (str(j).zfill(2), str(i).zfill(2))
                 for eachcode in self.stock_dict.keys():
                     try:
-                        self.stock_dict[eachcode].set_ohlc_min_from_naver(is_debug=ntime, debug_date=self.stock_dict[eachcode].the_date)
+                        elapesd_time_d = self.stock_dict[eachcode].set_ohlc_min_from_naver(is_debug=ntime, debug_date=self.stock_dict[eachcode].the_date)
                     except:
                         print("*** CONNECTION ERROR")
                         break
@@ -123,7 +123,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                     elapesd_time_c = self.stock_dict[eachcode].check_status(logmode=2)['elapsed_time'] # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하
                     # if msg is not None:
                     #     self.send_message_telegram(msg)
-                    print(eachcode, ntime, elapesd_time_a, elapesd_time_b, elapesd_time_c)
+                    print(eachcode, ntime, elapesd_time_d, elapesd_time_a, elapesd_time_b, elapesd_time_c)
                     time.sleep(0.1) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한종목당 0.1초 슬립
                 time.sleep(1) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한그룹 다돌면 30초씩 슬립하도록
 
