@@ -312,7 +312,7 @@ class JazzstockObject:
             
         elif logmode == 2:   # DEBUGGING PURPOSE
             # print(self.stockname, self.df_min_raw_naver.tail(1)[['TIMESTAMP','CLOSE']].values)
-            return {'elapsed_time': datetime.now() - st}
+            return {'elapsed_time': datetime.now() - st, 'result':self.df_ohlc_realtime_filled['TRADINGVALUE'].tail(1).values[0]}
 
 
     # ==============================================================================================

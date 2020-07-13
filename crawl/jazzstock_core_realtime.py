@@ -114,17 +114,22 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                 ntime = '%s%s00' % (str(j).zfill(2), str(i).zfill(2))
                 for eachcode in self.stock_dict.keys():
                     try:
-                        elapesd_time_d = self.stock_dict[eachcode].set_ohlc_min_from_naver(is_debug=ntime, debug_date=self.stock_dict[eachcode].the_date)
+                        elapesd_time_d = self.stock_dict[eachcode].set_ohlc_min_from_naver(is_debug=ntime, debug_date=self.stock_dict[eachcode].the_date)['elapsed_time']
+                        elapesd_time_a = self.stock_dict[eachcode].set_candle_five(is_debug=ntime)['elapsed_time']
+                        elapesd_time_b = self.stock_dict[eachcode].fill_index()['elapsed_time']
+                        ret = self.stock_dict[eachcode].check_status(logmode=2) # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하
+
+                        elapesd_time_c = ret['elapsed_time']
+                        trading_value = ret['result']
+                        # if msg is not None:
+                        #     self.send_message_telegram(msg)
+                        print(eachcode, ntime, elapesd_time_d, elapesd_time_a, elapesd_time_b, elapesd_time_c, trading_value)
                     except:
                         print("*** CONNECTION ERROR")
                         break
-                    elapesd_time_a = self.stock_dict[eachcode].set_candle_five(is_debug=ntime)['elapsed_time']
-                    elapesd_time_b = self.stock_dict[eachcode].fill_index()['elapsed_time']
-                    elapesd_time_c = self.stock_dict[eachcode].check_status(logmode=2)['elapsed_time'] # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하
-                    # if msg is not None:
-                    #     self.send_message_telegram(msg)
-                    print(eachcode, ntime, elapesd_time_d, elapesd_time_a, elapesd_time_b, elapesd_time_c)
+
                     time.sleep(0.1) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한종목당 0.1초 슬립
+                print('-'*100)
                 time.sleep(1) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한그룹 다돌면 30초씩 슬립하도록
 
 
@@ -155,19 +160,29 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                         st = datetime.now()
                         for eachcode in self.stock_dict.keys():
                             try:
-                                self.stock_dict[eachcode].set_ohlc_min_from_naver()
+                                elapesd_time_d =self.stock_dict[eachcode].set_ohlc_min_from_naver()['elapsed_time']
+                                elapesd_time_a = self.stock_dict[eachcode].set_candle_five()['elapsed_time']
+                                elapesd_time_b = self.stock_dict[eachcode].fill_index()['elapsed_time']
+
+                                # msg = self.stock_dict[eachcode].check_status(logmode=1) # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하면됨
+                                temp = self.stock_dict[eachcode].check_status(logmode=1)[
+                                    'result']  # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하
+
+                                msg = temp['result']
+                                elapesd_time_c = temp['elapsed_time']
+
+                                if msg is not None:
+                                    self.send_message_telegram(msg)
+
+                                print(eachcode, elapesd_time_d, elapesd_time_a, elapesd_time_b, elapesd_time_c)
+
                             except:
                                 time.sleep(4)
                                 print('==='*30)
                                 print(' C O N N E C T I O N E R R O R')
                                 print('==='*30)
-                                self.stock_dict[eachcode].set_ohlc_min_from_naver()
-                            self.stock_dict[eachcode].set_candle_five()
-                            self.stock_dict[eachcode].fill_index()
-                            msg = self.stock_dict[eachcode].check_status(logmode=1) # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하면됨
-                            
-                            if msg is not None:
-                                self.send_message_telegram(msg)
+                                self.stock_dict[eachcode].set_ohlc_min_from_naver()['elapsed_time']
+
 
                         print('\n')
                         print(datetime.now()-st)
