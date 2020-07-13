@@ -125,9 +125,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                         #     self.send_message_telegram(msg)
                         print(eachcode, ntime, elapesd_time_d, elapesd_time_a, elapesd_time_b, elapesd_time_c, trading_value)
                     except:
-                        print("*** CONNECTION ERROR")
-                        break
-
+                        print("*** %s, CONNECTION ERROR"%(eachcode))
                     time.sleep(0.1) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한종목당 0.1초 슬립
                 print('-'*100)
                 time.sleep(1) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한그룹 다돌면 30초씩 슬립하도록
