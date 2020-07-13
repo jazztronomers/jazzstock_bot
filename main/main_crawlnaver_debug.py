@@ -10,8 +10,16 @@ if __name__=='__main__':
         stockcode_list = sys.argv[1:]
 
     else:
-        # stockcode_list = ['079940', '093320', '035420', '060250', '131370', '023590', '239610', '035720', '036800', '119860']
-        stockcode_list = ['093320']
+        # stockcode_list = ['093320']
+        stockcode_list = db.selectSingleColumn("SELECT STOCKCODE "
+                                        "FROM jazzdb.T_STOCK_SND_ANALYSIS_RESULT_TEMP "
+                                        "JOIN jazzdb.T_DATE_INDEXED USING (DATE) "
+                                        "JOIN jazzdb.T_STOCK_MC USING(STOCKCODE, DATE) "
+                                        "WHERE 1=1 "
+                                        "AND CNT=0 "
+                                        "AND MC > 1 "
+                                        "ORDER BY YG5 "
+                                        "LIMIT 100 ")
         # stockcode_list = db.selectSingleColumn('SELECT STOCKCODE FROM jazzdb.T_UNIVERSE_LIST WHERE DATE = "2020-04-28" LIMIT 40')
 
 
