@@ -1,5 +1,6 @@
 import pandas as pd
 import time
+import sys
 import warnings
 import config.config as cf
 import telepot
@@ -99,7 +100,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         print('-'*100)
         return listdf
 
-    def debug(self):
+    def debug(self, checktime=False):
         '''
         장종료후 디버깅목적함수
         최근거래일기준으로 개장후 2시간59분치 주가정보를 긁어옴
@@ -117,14 +118,13 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                     except:
                         print("*** CONNECTION ERROR")
                         break
-                    self.stock_dict[eachcode].set_candle_five(is_debug=ntime)
-                    self.stock_dict[eachcode].fill_index()
-                    msg = self.stock_dict[eachcode].check_status(logmode=1) # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하
-                    if msg is not None:
-                        self.send_message_telegram(msg)
+                    elapesd_time_a = self.stock_dict[eachcode].set_candle_five(is_debug=ntime)['elapsed_time']
+                    elapesd_time_b = self.stock_dict[eachcode].fill_index()['elapsed_time']
+                    elapesd_time_c = self.stock_dict[eachcode].check_status(logmode=2)['elapsed_time'] # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하
+                    # if msg is not None:
+                    #     self.send_message_telegram(msg)
+                    print(eachcode, ntime, elapesd_time_a, elapesd_time_b, elapesd_time_c)
                     time.sleep(0.1) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한종목당 0.1초 슬립
-                
-                print('\n\n  sleep 30 seconds ....\n\n')
                 time.sleep(1) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한그룹 다돌면 30초씩 슬립하도록
 
 

@@ -112,6 +112,7 @@ class JazzstockObject:
         :return:
         '''
 
+        st=datetime.now()
         query = '''
 
         SELECT DATE, REPLACE(TIME,":","") AS TIME, OPEN, HIGH, LOW, CLOSE, VOLUME
@@ -129,26 +130,16 @@ class JazzstockObject:
         if(cntto==0 and window==1):
             print(" * %s(%s)의 %s일치 5분봉데이터를 DB에서 조회해왔습니다" % (self.stockname, self.stockcode, window))
 
+        return {'elapsed_time': datetime.now() - st}
 
-    def _check_running_time(func):
-        def new_func(*args, **kwargs):
-            start_time = time.perf_counter()
-            result = func(*args, **kwargs)
-            end_time = time.perf_counter()
-            runningtime = '%s | %s sec' % (func.__name__, round(end_time - start_time, 3))
-            # print(runningtime)
-            return result
 
-        return new_func
-
-    @_check_running_time
     def set_ohlc_min_from_naver(self, is_debug=False, debug_date=None):
         '''
         NAVER에서 해당종목의 당일 분단위 종가 / 거래량변동을 실행시점까지 긁어오는 함수
 
         :return:
         '''
-
+        st=datetime.now()
         # ==========================================================================
         # 최초실행, 당일 분봉정보가 없는경우
         # 최초실행이 아니라면, 크롤링 주기가 10분이하이면 한페이지 만 긁어도 되니까 lastidx 도 1로
@@ -176,7 +167,7 @@ class JazzstockObject:
                 self.stockcode, ndate, ntime, pageidx)
 
 
-            print(url)
+            # print(url)
 
             htmls = requests.get(url).text
             ndf = pd.read_html(htmls, header=0)[0]
@@ -211,8 +202,11 @@ class JazzstockObject:
                 self.OPEN = int(temp.CLOSE-temp.FLUCT)
                 break
 
-    @_check_running_time
+        return {'elapsed_time': datetime.now() - st}
+
     def set_candle_five(self, is_debug=False):
+
+        st = datetime.now()
 
         rtdf = self.df_ohlc_min.copy()
         DATE = self.the_date or str(datetime.now().date())
@@ -240,11 +234,12 @@ class JazzstockObject:
                                    int(float(VOLUME))]
 
         self.df_ohlc_realtime = rtdf.copy()
+        return {'elapsed_time': datetime.now() - st}
 
-    @_check_running_time
     def fill_index(self):
-        self.df_ohlc_realtime_filled=ic.fillindex(self.df_ohlc_realtime).tail(5)
-
+        st = datetime.now()
+        self.df_ohlc_realtime_filled = ic.fillindex(self.df_ohlc_realtime).tail(5)
+        return {'elapsed_time': datetime.now() - st}
 
 
     def get_info(self, type='DataFrame'):
@@ -271,7 +266,7 @@ class JazzstockObject:
         
         :return
         '''
-        
+        st=datetime.now()
         # a = 123
         # log_mode_dic= {'0':"콘솔에다 보기 좋은 형태로 프린트 - markdown / return True",
         #                '1':"콘솔에다가 dictionary로 프린트 - series 출력 / return True",
@@ -291,36 +286,33 @@ class JazzstockObject:
         # HUMAN READABLE : MULTI LINE
         elif logmode == 1:
             print('%s (%s)'%(self.stockname, self.stockcode))
-            # print('-'*80)
             print('1분단위 체결정보:')
             print(self.df_min_raw_naver.tail(5))
-            
             print('\n5분봉:')
             print(self.df_ohlc_realtime_filled[columns].tail(5))
             
-    
-            # print(self.df_ohlc_realtime_filled.columns)
-        
+
             global condition_dict
-            ret = self.simul_all_condition(condition_dict, n=1)
+            ret = self.simul_all_condition(condition_dict, n=1)['result']
             print('='*100)
     
     
-            if(len(ret)>0):            
+            if(len(ret)>0):
                 rtdic = ret[0].to_dict('index')
                 rtdic = rtdic[list(rtdic.keys())[0]]
                 rtdic['STOCKNAME']=self.stockname
                 rtdic['STOCKCODE']=self.stockcode
-                return rtdic
+                return {'result':rtdic, 'elapsed_time': datetime.now()-st}
             
             
             else:
-                return None
+                return {'elapsed_time': datetime.now()-st}
             
             
             
-        elif logmode == 2:
-            pass
+        elif logmode == 2:   # DEBUGGING PURPOSE
+            # print(self.stockname, self.df_min_raw_naver.tail(1)[['TIMESTAMP','CLOSE']].values)
+            return {'elapsed_time': datetime.now() - st}
 
 
     # ==============================================================================================
@@ -332,6 +324,7 @@ class JazzstockObject:
         :return:
         '''
 
+        st = datetime.now()
         
         # 0704: 직전거래일 정보는 self에 담을게 아니라, dictionary에 담아주는게
         # 향후 조건식 만들때 편하다 
@@ -393,6 +386,7 @@ class JazzstockObject:
         self.BBU_UP_20, self.BBU_LOW_20 = self._get_daily_bb_price(percent=0.2)
 
 
+        return {"elapsed_time": datetime.now()-st}
 
 
 
@@ -408,6 +402,7 @@ class JazzstockObject:
         :return: list of dataframe
         '''
         ret = []
+        st = datetime.now()
 
 
         for cond_name, cond_ori in sorted(condition_dict.items(), key=lambda key_value: key_value[0]):
@@ -441,7 +436,7 @@ class JazzstockObject:
         #======================================================
         # print(ret)
         #======================================================
-        return ret
+        return {"result":ret, "elapsed_time": datetime.now()-st}
     
     
     def _getter(self, cond_df, col):        
@@ -477,7 +472,6 @@ class JazzstockObject:
         elif (operate == 'BIGGER_MINMAX_P'):
             return df[col] > (max(args[1], args[0]) - min(args[1], args[0])) * args[2] + min(args[1], args[0])
         elif (operate == 'SMALLER_MINMAX_P'):
-            print((max(args[1], args[0]) - min(args[1], args[0])) * args[2] + min(args[1], args[0]))
             return df[col] < (max(args[1], args[0]) - min(args[1], args[0])) * args[2] + min(args[1], args[0])
         elif (operate == 'TRUE'):
             return df[col] == 'True'
