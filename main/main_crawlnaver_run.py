@@ -14,9 +14,9 @@ if __name__=='__main__':
 
     elif len(sys.argv) == 4:
 	
-	instance_id = sys.argv[1]
-	window = sys.argv[2]
-	cnt = sys.argv[3]
+        instance_id = sys.argv[1]
+        window = sys.argv[2]
+        cnt = sys.argv[3]
         stockcode_list = db.selectSingleColumn("SELECT STOCKCODE "
                                                 "FROM jazzdb.T_STOCK_SND_ANALYSIS_RESULT_TEMP "
                                                 "JOIN jazzdb.T_DATE_INDEXED USING (DATE) "
@@ -26,7 +26,7 @@ if __name__=='__main__':
                                                 "AND MC > 1 "
                                                 "ORDER BY %s5"%(window)
                                                 "LIMIT %s"%(cnt))
-	print('%s/%s/%s'%(instance_id, window, cnt))
+        print('%s/%s/%s'%(instance_id, window, cnt))
 	
 
     else:
