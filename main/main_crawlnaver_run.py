@@ -1,5 +1,4 @@
 import sys
-import os
 import common.connector_db as db
 import time
 from datetime import datetime
@@ -17,15 +16,23 @@ if __name__=='__main__':
         instance_id = sys.argv[1]
         window = sys.argv[2]
         cnt = sys.argv[3]
-        stockcode_list = db.selectSingleColumn("SELECT STOCKCODE "
-                                                "FROM jazzdb.T_STOCK_SND_ANALYSIS_RESULT_TEMP "
-                                                "JOIN jazzdb.T_DATE_INDEXED USING (DATE) "
-                                                "JOIN jazzdb.T_STOCK_MC USING(STOCKCODE, DATE) "
-                                                "WHERE 1=1 "
-                                                "AND CNT=0 "
-                                                "AND MC > 1 "
-                                                "ORDER BY %s5"%(window)
-                                                "LIMIT %s"%(cnt))
+        
+        query = '''
+        
+        
+        SELECT STOCKCODE
+        FROM jazzdb.T_STOCK_SND_ANALYSIS_RESULT_TEMP
+        JOIN jazzdb.T_DATE_INDEXED USING (DATE)
+        JOIN jazzdb.T_STOCK_MC USING(STOCKCODE, DATE)
+        WHERE 1=1
+        AND CNT=0
+        AND MC > 1
+        ORDER BY %s5
+        LIMIT %s
+        
+        '''%(window, cnt)
+        
+        stockcode_list = db.selectSingleColumn(query)
         print('%s/%s/%s'%(instance_id, window, cnt))
 	
 

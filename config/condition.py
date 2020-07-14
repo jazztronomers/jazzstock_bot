@@ -1,3 +1,4 @@
+import os
 # Dataframe 에 거래대금 컬럼 추가, 거래량 지표를 사용할
 
 
