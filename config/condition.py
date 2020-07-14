@@ -9,25 +9,34 @@
 #        'VSMA60', 'VSMAR5', 'VSMAR20', 'VSMAR60', 'BBU', 'BBL', 'BBS', 'BBW',
 #        'BBP', 'K', 'D', 'J', 'OBV', 'CLOSEDIFF', 'RSI', 'TRADINGVALUE'],
 
+if('INSTANCE_ID' in os.environ):
+	
+	INSTANCE_ID=os.environ['INSTANCE_ID']
+
+else:
+	INSTANCE_ID='T'
+
+
 TESTCOND = {
     
 
-    'T01_HIGH_VOL_PSMAR20': {
+    '%s_01_HIGH_VOL_PSMAR20'%(INSTANCE_ID): {
         
-                    'VSMAR5':['BIGGER', 3],       # 5분봉 거래량 / 5분봉 20이평 거래량  > 2
+                    'VSMAR5':['BIGGER', 3],     
                     'PSMAR20':['BIGGER', 0.03],
-                    'TRADINGVALUE':['BIGGER',3]    # 5분봉 거래대금 1억원 이상
+                    'TRADINGVALUE':['BIGGER',1]  
     },
     
-    'T02_BIG_D_VOL': {
-                    'D': ['BIGGER_P' , 'K', 2],   # 5분봉 STOCHASTIC D가 K 보다 200% 높음
-                    'VSMAR5':['BIGGER', 3]        # 5분봉 거래량 / 5분봉 5이평 거래량  > 2
+    '%s_02_BIG_K_VOL'%(INSTANCE_ID): {
+                    'K': ['BIGGER' , 0.95],   
+                    'VSMAR5':['BIGGER', 3],
+                    'TRADINGVALUE':['BIGGER',1]  
     },
     
-    'T03_HIGH_VOL': {
-        
-                    'VSMAR20':['BIGGER', 5],       # 5분봉 거래량 / 5분봉 20이평 거래량  > 2
-                    'TRADINGVALUE':['BIGGER',1]    # 5분봉 거래대금 1억원 이상
+    '%s03_HIGH_VOL'%(INSTANCE_ID): {
+        	    'PSMAR60':['BIGGER',0.02],
+                    'VSMAR20':['BIGGER', 5],     
+                    'TRADINGVALUE':['BIGGER',1]   
     },
     
 
