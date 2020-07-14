@@ -163,14 +163,12 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                                 elapesd_time_b = self.stock_dict[eachcode].fill_index()['elapsed_time']
 
                                 # msg = self.stock_dict[eachcode].check_status(logmode=1) # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하면됨
-                                temp = self.stock_dict[eachcode].check_status(logmode=1)[
-                                    'result']  # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하
-
-                                msg = temp['result']
+                                temp = self.stock_dict[eachcode].check_status(logmode=1)# 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하
+                                
                                 elapesd_time_c = temp['elapsed_time']
-
-                                if msg is not None:
-                                    self.send_message_telegram(msg)
+                                
+                                if 'result' in temp.keys():
+                                    self.send_message_telegram(temp['result'])
 
                                 print(eachcode, elapesd_time_d, elapesd_time_a, elapesd_time_b, elapesd_time_c)
 
