@@ -285,11 +285,11 @@ class JazzstockObject:
                 
         # HUMAN READABLE : MULTI LINE
         elif logmode == 1:
-            print('%s (%s)'%(self.stockname, self.stockcode))
-            print('1분단위 체결정보:')
-            print(self.df_min_raw_naver.tail(5))
-            print('\n5분봉:')
-            print(self.df_ohlc_realtime_filled[columns].tail(5))
+            #print('%s (%s)'%(self.stockname, self.stockcode))
+            #print('1분단위 체결정보:')
+            #print(self.df_min_raw_naver.tail(5))
+            #print('\n5분봉:')
+            #print(self.df_ohlc_realtime_filled[columns].tail(5))
             
 
             global condition_dict
