@@ -294,7 +294,6 @@ class JazzstockObject:
 
             global condition_dict
             ret = self.simul_all_condition(condition_dict, n=1)['result']
-            print('='*100)
     
     
             if(len(ret)>0):
