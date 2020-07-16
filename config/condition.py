@@ -33,8 +33,8 @@ TESTCOND = {
     
     '%s_02_BIG_K_VOL'%(INSTANCE_ID): {
                     'K': ['BIGGER' , 0.95],   
-                    'VSMAR5':['BIGGER', 3],
-                    'TRADINGVALUE':['BIGGER',1]  
+                    'VSMAR5':['BIGGER', 7],
+                    'TRADINGVALUE':['BIGGER',2]  
     },
     
     '%s03_HIGH_VOL'%(INSTANCE_ID): {
