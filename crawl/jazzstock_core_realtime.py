@@ -70,7 +70,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         # TELEGRAM ================================================
         self.TOKEN = cf.TELEBOT_TOKEN
         self.RECEIVER_SERVICE = cf.TELEBOT_ID
-        self.RECEIVER_DEBUG = cd.TELEBOT_DEBUG
+        self.RECEIVER_DEBUG = cf.TELEBOT_DEBUG
         self.BOT = telepot.Bot(self.TOKEN)
         # =========================================================
 
