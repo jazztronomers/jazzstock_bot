@@ -18,6 +18,9 @@ else:
 	INSTANCE_ID='T'
 
 
+print(" * CONDITION INITIALIZED, instance_id: %s" %(INSTANCE_ID))
+
+
 TESTCOND = {
     
 
