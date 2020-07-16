@@ -69,7 +69,8 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         self.MASTERIP = '127.0.0.1'
         # TELEGRAM ================================================
         self.TOKEN = cf.TELEBOT_TOKEN
-        self.RECEIVER = cf.TELEBOT_ID
+        self.RECEIVER_SERVICE = cf.TELEBOT_ID
+        self.RECEIVER_DEBUG = cd.TELEBOT_DEBUG
         self.BOT = telepot.Bot(self.TOKEN)
         # =========================================================
 
@@ -208,7 +209,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         for k,v in message_dic.items():
             print(k, v)
         
-        if self.RECEIVER and self.TOKEN:
+        if self.RECEIVER_SERVICE and self.TOKEN:
             message = '%s (%s) : %s / '%(message_dic['STOCKNAME'], message_dic['STOCKCODE'],message_dic['TIME'])
             message = message+'%s\n'%(message_dic['COND_NAME'])
             message = message+'PMR | %.3f / %.3f / %.3f\n'%(message_dic['PSMAR5'],message_dic['PSMAR20'],message_dic['PSMAR60'])
@@ -231,7 +232,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                                                      
 
             
-            self.BOT.sendMessage(self.RECEIVER, '%s' % (message))
+            self.BOT.sendMessage(self.RECEIVER_SERVICE, '%s' % (message))
         else:
             print(' * INFO: TELEGRAM TOKEN OR MESSAGE RECEIVER NOT SPECIFIED')
             
