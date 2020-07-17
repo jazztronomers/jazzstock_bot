@@ -208,30 +208,57 @@ class JazzstockObject:
 
         st = datetime.now()
 
-        rtdf = self.df_ohlc_min.copy()
+        if len(self.df_ohlc_realtime)==0:
+            rtdf = self.df_ohlc_min.copy()
+        else:
+            rtdf = self.df_ohlc_realtime.copy()
+
         DATE = self.the_date or str(datetime.now().date())
-        ddf = pd.merge(self.df_min_raw_naver, timedf, on='TIMEKEY')
+        ddf = pd.merge(self.df_min_raw_naver, timedf, on='TIMEKEY')     # JOIN TIMEKEY COLUMN
         ddf['DATE'] = DATE
         ddf = ddf[['DATE', 'TIMEKEY', 'T5', 'CLOSE', 'VOLFLUC']]
 
-
         for each in ddf.T5.drop_duplicates():
-            temp = ddf[ddf['T5'] == each]
-            OPEN = temp.CLOSE.values[0]
-            HIGH = temp.CLOSE.max()
-            LOW = temp.CLOSE.min()
-            CLOSE = temp.CLOSE.values[-1]
-            
-            # PR
-            
-            VOLUME = pd.to_numeric(temp.VOLFLUC).sum()
 
-            rtdf.loc[len(rtdf)] = [DATE, each,
-                                   int(float(OPEN)),
-                                   int(float(HIGH)),
-                                   int(float(LOW)),
-                                   int(float(CLOSE)),
-                                   int(float(VOLUME))]
+            # APPEND NEW
+            if each not in rtdf[rtdf['DATE']==DATE].TIME.values:
+                temp = ddf[ddf['T5'] == each]
+                OPEN = temp.CLOSE.values[0]
+                HIGH = temp.CLOSE.max()
+                LOW = temp.CLOSE.min()
+                CLOSE = temp.CLOSE.values[-1]
+                VOLUME = pd.to_numeric(temp.VOLFLUC).sum()
+
+                # rtdf.set_value(index, column_name, value)
+                # PR
+
+                rtdf.loc[len(rtdf)] = [DATE, each,
+                                       int(float(OPEN)),
+                                       int(float(HIGH)),
+                                       int(float(LOW)),
+                                       int(float(CLOSE)),
+                                       int(float(VOLUME))]
+
+            # UPDATE LAST
+            elif each == rtdf.tail(1).TIME.values[0]:
+                temp = ddf[ddf['T5'] == each]
+                OPEN = temp.CLOSE.values[0]
+                HIGH = temp.CLOSE.max()
+                LOW = temp.CLOSE.min()
+                CLOSE = temp.CLOSE.values[-1]
+                VOLUME = pd.to_numeric(temp.VOLFLUC).sum()
+
+                # rtdf.set_value(index, column_name, value)
+                # PR
+
+                rtdf.loc[len(rtdf)-1] = [DATE, each,
+                                       int(float(OPEN)),
+                                       int(float(HIGH)),
+                                       int(float(LOW)),
+                                       int(float(CLOSE)),
+                                       int(float(VOLUME))]
+
+        # print('AFTER', rtdf.tail(5))
 
         self.df_ohlc_realtime = rtdf.copy()
         return {'elapsed_time': datetime.now() - st}
