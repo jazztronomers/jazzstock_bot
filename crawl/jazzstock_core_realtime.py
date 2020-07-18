@@ -139,8 +139,8 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                               ,'\t', usage_cpu, usage_mem_rss, usage_mem_vms, usage_mem_wset, usage_mem_uss)
 
 
-                    except:
-                            print("*** %s, CONNECTION ERROR"%(eachcode))
+                    except Exception as e:
+                            print(" ** %s | ERROR: %s"%(eachcode, e))
                     time.sleep(0.1) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한종목당 0.1초 슬립
                 time.sleep(0.1 if len(self.stock_dict)<2 else 10) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한그룹 다돌면 10초씩 슬립하도록
 
