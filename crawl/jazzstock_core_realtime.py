@@ -120,6 +120,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         for j in ['09','10','11','12','13','14','15']: # 9시부터 9시 15분까지 1분단위로 디버깅
             for i in range(0, 60, n):
                 ntime = '%s%s00' % (str(j).zfill(2), str(i).zfill(2))
+                st =datetime.now()
                 for eachcode in self.stock_dict.keys():
                     try:
                         elapesd_time_crawl = self.stock_dict[eachcode].set_ohlc_min_from_naver(is_debug=ntime, debug_date=self.stock_dict[eachcode].the_date)['elapsed_time']
@@ -152,8 +153,12 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
 
                     except Exception as e:
                             print(" ** %s | ERROR: %s"%(eachcode, e))
-                    time.sleep(0.1) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한종목당 0.1초 슬립
-                time.sleep(0.1 if len(self.stock_dict)<2 else 10) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한그룹 다돌면 10초씩 슬립하도록
+
+                if len(self.stock_dict) < 2:
+                    time.sleep(0.1)
+                else:
+                    print(' * LEN : %s : %s' %(len(self.stock_dict.keys()),datetime.now-st))
+                    time.sleep(10) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한그룹 다돌면 10초씩 슬립하도록
 
 
     def run(self):
