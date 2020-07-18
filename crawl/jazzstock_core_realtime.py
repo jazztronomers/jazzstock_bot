@@ -106,43 +106,41 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         장종료후 디버깅목적함수
         최근거래일기준으로 개장후 2시간59분치 주가정보를 긁어옴
         '''
-        
-        print(' * RUN DEBUGGING')
+
+        import psutil
+        import os
+        pid = os.getpid()
+
+        print(' * RUN DEBUGGING ... PID: %s' %(pid))
         self.initialize_dataframe(cntto=1)
         
         for j in ['09','10','11','12','13','14','15']: # 9시부터 9시 15분까지 1분단위로 디버깅
             for i in range(0, 60, n):
                 ntime = '%s%s00' % (str(j).zfill(2), str(i).zfill(2))
                 for eachcode in self.stock_dict.keys():
-                    try:
-                        elapesd_time_d = self.stock_dict[eachcode].set_ohlc_min_from_naver(is_debug=ntime, debug_date=self.stock_dict[eachcode].the_date)['elapsed_time']
-                        elapesd_time_a = self.stock_dict[eachcode].set_candle_five(is_debug=ntime)['elapsed_time']
-                        elapesd_time_b = self.stock_dict[eachcode].fill_index()['elapsed_time']
-                        ret = self.stock_dict[eachcode].check_status(logmode=2) # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하
+                    # try:
+                        elapesd_time_crawl = self.stock_dict[eachcode].set_ohlc_min_from_naver(is_debug=ntime, debug_date=self.stock_dict[eachcode].the_date)['elapsed_time']
+                        elapesd_time_candle = self.stock_dict[eachcode].set_candle_five()['elapsed_time']
+                        elapesd_time_calcindex = self.stock_dict[eachcode].fill_index()['elapsed_time']
+                        ret = self.stock_dict[eachcode].check_status(logmode=1) # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하
 
-                        elapesd_time_c = ret['elapsed_time']
-                        trading_value = ret['result']
-                        # if msg is not None:
-                        #     self.send_message_telegram(msg)
-                        # print(eachcode, ntime, elapesd_time_d, elapesd_time_a, elapesd_time_b, elapesd_time_c, trading_value)
+                        elapesd_time_ifalert = ret['elapsed_time']
+                        result = ret['result']
 
-                        # self.df_ohlc_min = pd.DataFrame()
-                        # self.df_ohlc_realtime = pd.DataFrame()
-                        # self.df_ohlc_realtime_filled = pd.DataFrame()
+                        usage_cpu = psutil.Process(pid).cpu_percent() / psutil.cpu_count()
+                        usage_mem_rss = round(psutil.Process(pid).memory_percent('rss'),5)
+                        usage_mem_vms = round(psutil.Process(pid).memory_percent('vms'),5)
+                        usage_mem_wset = round(psutil.Process(pid).memory_percent('wset'),5)
+                        usage_mem_uss = round(psutil.Process(pid).memory_percent('uss'), 5)
 
-
-                        print(eachcode, ntime, elapesd_time_d, elapesd_time_a, elapesd_time_b, elapesd_time_c, trading_value,
-                              len(self.stock_dict[eachcode].df_ohlc_min),
-                              len(self.stock_dict[eachcode].df_ohlc_realtime),
-                              len(self.stock_dict[eachcode].df_ohlc_realtime_filled),
-                              len(self.stock_dict[eachcode].df_min_raw_naver))
+                        print(eachcode, ntime, elapesd_time_crawl, elapesd_time_candle, elapesd_time_calcindex, elapesd_time_ifalert,
+                              usage_cpu, usage_mem_rss, usage_mem_vms, usage_mem_wset, usage_mem_uss)
 
 
-
-                    except:
-                            print("*** %s, CONNECTION ERROR"%(eachcode))
-                    time.sleep(0.1) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한종목당 0.1초 슬립
-                time.sleep(1) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한그룹 다돌면 30초씩 슬립하도록
+                    # except:
+                    #         print("*** %s, CONNECTION ERROR"%(eachcode))
+                    # time.sleep(0.1) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한종목당 0.1초 슬립
+                time.sleep(0.1) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한그룹 다돌면 30초씩 슬립하도록
 
 
     def run(self):
@@ -176,7 +174,6 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                                 elapesd_time_a = self.stock_dict[eachcode].set_candle_five()['elapsed_time']
                                 elapesd_time_b = self.stock_dict[eachcode].fill_index()['elapsed_time']
 
-                                # msg = self.stock_dict[eachcode].check_status(logmode=1) # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하면됨
                                 temp = self.stock_dict[eachcode].check_status(logmode=1)# 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하
                                 
                                 elapesd_time_c = temp['elapsed_time']
@@ -230,21 +227,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
             message = message+'KDJ | %.3f / %.3f / %.3f\n' %(message_dic['K'], message_dic['D'],message_dic['J'])
             message = message+'BPW | %.3f / %.3f\n\n'%(message_dic['BBP'], message_dic['BBW'])
             message = message+'finance.naver.com/item/main.nhn?code=%s'%(message_dic['STOCKCODE'])
-            
-            
-#             %(message_dic['STOCKNAME'], message_dic['STOCKCODE'],message_dic['TIME'], 
-# #                               message_dic['COND_NAME'],         
-# #                               message_dic['PSMAR5'],message_dic['PSMAR20'],message_dic['PSMAR60'],
-# #                               message_dic['VSMAR5'],message_dic['VSMAR20'],message_dic['VSMAR60']
-# #                               message_dic['BBP'],      
-# #                               message_dic['BBW'],
-# #                               message_dic['K'],
-# #                               message_dic['D'],
-# #                               message_dic['J'],
-# #                               message_dic['STOCKCODE'])
-                                                     
 
-            
             self.BOT.sendMessage(self.RECEIVER_SERVICE, '%s' % (message))
         else:
             print(' * INFO: TELEGRAM TOKEN OR MESSAGE RECEIVER NOT SPECIFIED')
