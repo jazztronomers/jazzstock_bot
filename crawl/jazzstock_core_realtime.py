@@ -109,9 +109,12 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
 
         import psutil
         import os
+        import platform
         pid = os.getpid()
+        platform_name = platform.system()
 
-        print(' * RUN DEBUGGING ... PID: %s' %(pid))
+
+        print(' * RUN DEBUGGING ... PLATFORM: %s, PID: %s' %(platform_name, pid))
         self.initialize_dataframe(cntto=1)
         
         for j in ['09','10','11','12','13','14','15']: # 9시부터 9시 15분까지 1분단위로 디버깅
@@ -131,12 +134,20 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                         usage_cpu = psutil.Process(pid).cpu_percent() / psutil.cpu_count()
                         usage_mem_rss = round(psutil.Process(pid).memory_percent('rss'),5)
                         usage_mem_vms = round(psutil.Process(pid).memory_percent('vms'),5)
-                        usage_mem_wset = round(psutil.Process(pid).memory_percent('wset'),5)
                         usage_mem_uss = round(psutil.Process(pid).memory_percent('uss'), 5)
+
+                        usage_list = [usage_cpu, usage_mem_rss, usage_mem_vms, usage_mem_uss]
+                        if platform_name=='Windows':
+                            usage_list.append(round(psutil.Process(pid).memory_percent('wset'), 5))
+                        if platform_name=='Linux':
+                            usage_list.append(round(psutil.Process(pid).memory_percent('pss'), 5))
+                            usage_list.append(round(psutil.Process(pid).memory_percent('swap'), 5))
+
+
 
                         print(eachcode, ntime, meta
                               ,'\t', elapesd_time_crawl, elapesd_time_candle, elapesd_time_calcindex, elapesd_time_ifalert
-                              ,'\t', usage_cpu, usage_mem_rss, usage_mem_vms, usage_mem_wset, usage_mem_uss)
+                              ,'\t', usage_list)
 
 
                     except Exception as e:
