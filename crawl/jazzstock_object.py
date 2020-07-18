@@ -8,12 +8,14 @@ import util.index_calculator as ic
 import config.condition as cf
 from datetime import datetime
 
+
+
 warnings.filterwarnings('ignore')
 try:
-	timedf = pd.read_csv('../config/time.csv', dtype=str)
+    timedf = pd.read_csv('../config/time.csv', dtype=str)
 except:
-	timedf = pd.read_csv('config/time.csv', dtype=str)
-	
+    timedf = pd.read_csv('config/time.csv', dtype=str)
+
 condition_dict = cf.TESTCOND    
 
 tdic = {}
@@ -52,7 +54,6 @@ class JazzstockObject:
             'SELECT STOCKNAME FROM jazzdb.T_STOCK_CODE_MGMT WHERE STOCKCODE = "%s"' % (stockcode))
         self.the_date = the_date
         self.the_date_index = the_date_index
-
 
         # 최적화 필요 부분
         self.sr_daily = pd.Series()
@@ -129,8 +130,8 @@ class JazzstockObject:
 
         if(cntto==0 and window==1):
             print(" * %s(%s)의 %s일치 5분봉데이터를 DB에서 조회해왔습니다" % (self.stockname, self.stockcode, window))
-
-        return {'elapsed_time': datetime.now() - st}
+        elapsed_time = (datetime.now() - st)
+        return {'elapsed_time': '%s.%06d'%(elapsed_time.seconds, elapsed_time.microseconds)}
 
 
     def set_ohlc_min_from_naver(self, is_debug=False, debug_date=None):
@@ -157,7 +158,6 @@ class JazzstockObject:
             ndate = debug_date
 
         else:
-
             ntime = str(datetime.now().time()).replace(':', '')
 
         while pageidx <= lastidx:
@@ -165,12 +165,10 @@ class JazzstockObject:
             # https://finance.naver.com/item/sise_time.nhn?code=079940&thistime=20200616090000&page=1
             url = "https://finance.naver.com/item/sise_time.nhn?code=%s&thistime=%s%s&page=%s" % (
                 self.stockcode, ndate, ntime, pageidx)
-
-
-            # print(url)
-
             htmls = requests.get(url).text
             ndf = pd.read_html(htmls, header=0)[0]
+
+
             ndf.columns = ['TIMESTAMP', 'CLOSE', 'FLUCT', 'HOGA_S', 'HOGA_B', 'VOLCUM', 'VOLFLUC']
 
             self.df_min_raw_naver = self.df_min_raw_naver.append(ndf[ndf['TIMESTAMP'].notnull()], ignore_index=True)
@@ -202,10 +200,15 @@ class JazzstockObject:
                 self.OPEN = int(temp.CLOSE-temp.FLUCT)
                 break
 
-        return {'elapsed_time': datetime.now() - st}
+        elapsed_time = (datetime.now() - st)
+        return {'elapsed_time': '%s.%06d'%(elapsed_time.seconds, elapsed_time.microseconds)}
 
-    def set_candle_five(self, is_debug=False):
+    def set_candle_five(self):
+        '''
+        체결정보를 5분봉으로 가공한다.
 
+        :return:
+        '''
         st = datetime.now()
 
         if len(self.df_ohlc_realtime)==0:
@@ -247,10 +250,6 @@ class JazzstockObject:
                 LOW = temp.CLOSE.min()
                 CLOSE = temp.CLOSE.values[-1]
                 VOLUME = pd.to_numeric(temp.VOLFLUC).sum()
-
-                # rtdf.set_value(index, column_name, value)
-                # PR
-
                 rtdf.loc[len(rtdf)-1] = [DATE, each,
                                        int(float(OPEN)),
                                        int(float(HIGH)),
@@ -258,15 +257,16 @@ class JazzstockObject:
                                        int(float(CLOSE)),
                                        int(float(VOLUME))]
 
-        # print('AFTER', rtdf.tail(5))
-
         self.df_ohlc_realtime = rtdf.copy()
-        return {'elapsed_time': datetime.now() - st}
+
+        elapsed_time = (datetime.now() - st)
+        return {'elapsed_time': '%s.%06d'%(elapsed_time.seconds, elapsed_time.microseconds)}
 
     def fill_index(self):
         st = datetime.now()
         self.df_ohlc_realtime_filled = ic.fillindex(self.df_ohlc_realtime).tail(5)
-        return {'elapsed_time': datetime.now() - st}
+        elapsed_time = (datetime.now() - st)
+        return {'elapsed_time': '%s.%06d'%(elapsed_time.seconds, elapsed_time.microseconds)}
 
 
     def get_info(self, type='DataFrame'):
@@ -281,7 +281,7 @@ class JazzstockObject:
         return pd.DataFrame(temp).T[['STOCKNAME','DATE', 'CLOSE','BBP','BBW','K','D','J','VOLUME','RSI']]
 
     # 가장최근 분봉정보를 출력하는 함수
-    def check_status(self, columns=['DATE','TIME','BBP','BBW','K','D','J', 'CLOSE', 'TRADINGVALUE'], logmode=0):
+    def check_status(self, logmode=0):
         '''
         
         :param columns 체크할 컬럼명
@@ -294,54 +294,36 @@ class JazzstockObject:
         :return
         '''
         st=datetime.now()
-        # a = 123
-        # log_mode_dic= {'0':"콘솔에다 보기 좋은 형태로 프린트 - markdown / return True",
-        #                '1':"콘솔에다가 dictionary로 프린트 - series 출력 / return True",
-        #                '2':"dictionary를 반환                            / return dict(something)"}
-                    
-        # HUMAN READABLE : SINGLE LINE
-        if logmode == 0:
-            if(len(self.df_ohlc_realtime_filled)>1):
-                print('%s'%(self.stockname.ljust(8,' ')),                          # 종목명
-                    '%06s'%(self.OPEN),                                            # 시초가
-                    '%s'%(self.df_min_raw_naver.tail(1).TIMEKEY.values[0]),   # 현재시각
-                    '%08s'%(int(self.df_min_raw_naver.tail(1).CLOSE)),     # 현재가
-                    '%04s'%(int(self.df_min_raw_naver.tail(1).FLUCT)),     # 변동
-                    '|', '\t%s\t%s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f'%tuple(self.df_ohlc_realtime_filled[columns].values[-1].tolist()) # 5분봉정보
-                    )
-                
-        # HUMAN READABLE : MULTI LINE
-        elif logmode == 1:
-            #print('%s (%s)'%(self.stockname, self.stockcode))
-            #print('1분단위 체결정보:')
-            #print(self.df_min_raw_naver.tail(5))
-            #print('\n5분봉:')
-            #print(self.df_ohlc_realtime_filled[columns].tail(5))
-            
 
+        # 매매 판단 X
+        if logmode == 0:
+
+            elapsed_time = (datetime.now() - st)
+            return {'elapsed_time': '%s.%06d' % (elapsed_time.seconds, elapsed_time.microseconds),
+                    'result': self.df_ohlc_realtime_filled['CLOSE'].tail(1).values[0]}
+
+        # 매매 판단 O
+        elif logmode == 1:
             global condition_dict
             ret = self.simul_all_condition(condition_dict, n=1)['result']
-    
-    
+
             if(len(ret)>0):
                 rtdic = ret[0].to_dict('index')
                 rtdic = rtdic[list(rtdic.keys())[0]]
                 rtdic['STOCKNAME']=self.stockname
                 rtdic['STOCKCODE']=self.stockcode
-                return {'result':rtdic, 'elapsed_time': datetime.now()-st}
-            
-            
+                elapsed_time = (datetime.now() - st)
+                return {'elapsed_time': '%s.%06d' % (elapsed_time.seconds, elapsed_time.microseconds),
+                        'result':rtdic,
+                        'meta':self.df_ohlc_realtime_filled[['CLOSE','PSMAR5','VSMAR5']].round(3).tail(1).values[0]}
+
+
             else:
-                return {'elapsed_time': datetime.now()-st}
-            
-            
-            
-        elif logmode == 2:   # DEBUGGING PURPOSE
-            # print(self.stockname, self.df_min_raw_naver.tail(1)[['TIMESTAMP','CLOSE']].values)
-            return {'elapsed_time': datetime.now() - st, 'result':self.df_ohlc_realtime_filled['TRADINGVALUE'].tail(1).values[0]}
+                elapsed_time = (datetime.now() - st)
+                return {'elapsed_time': '%s.%06d' % (elapsed_time.seconds, elapsed_time.microseconds),
+                        'result':None,
+                        'meta':self.df_ohlc_realtime_filled[['CLOSE','PSMAR5','VSMAR5']].round(3).tail(1).values[0]}
 
-
-    # ==============================================================================================
     def set_prev_day_index(self):
         '''
 
@@ -457,11 +439,6 @@ class JazzstockObject:
             if ~flag and len(cond_df)>0:
                 ret.append(cond_df.copy())
 
-        #======================================================
-        # DEBUGGING 영역
-        #======================================================
-        # print(ret)
-        #======================================================
         return {"result":ret, "elapsed_time": datetime.now()-st}
     
     
@@ -535,17 +512,3 @@ class JazzstockObject:
         return percent*(BBU-BBL)+BBL
 
 
-    # 자잘한 함수들, 아직 미구현
-    # def set_recent_fluct_ratio_from_market_open(self):
-    #     # 시초가 대비 변동률
-    #     pass
-    #
-    # def set_recent_fluct_ratio_from_prev_close(self):
-    #     # 시초가 대비 변동률
-    #     pass
-    #
-    # def set_recent_top_n_volume_per_stick(self, n=10, window=500):
-    #     # 최근 500개 5분봉중 거래량 상위 봉 세팅
-    #     pass
-
-    # ==============================================================================================

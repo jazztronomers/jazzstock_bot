@@ -118,7 +118,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
             for i in range(0, 60, n):
                 ntime = '%s%s00' % (str(j).zfill(2), str(i).zfill(2))
                 for eachcode in self.stock_dict.keys():
-                    # try:
+                    try:
                         elapesd_time_crawl = self.stock_dict[eachcode].set_ohlc_min_from_naver(is_debug=ntime, debug_date=self.stock_dict[eachcode].the_date)['elapsed_time']
                         elapesd_time_candle = self.stock_dict[eachcode].set_candle_five()['elapsed_time']
                         elapesd_time_calcindex = self.stock_dict[eachcode].fill_index()['elapsed_time']
@@ -126,6 +126,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
 
                         elapesd_time_ifalert = ret['elapsed_time']
                         result = ret['result']
+                        meta = [float(x) for x in ret['meta']]
 
                         usage_cpu = psutil.Process(pid).cpu_percent() / psutil.cpu_count()
                         usage_mem_rss = round(psutil.Process(pid).memory_percent('rss'),5)
@@ -133,14 +134,15 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                         usage_mem_wset = round(psutil.Process(pid).memory_percent('wset'),5)
                         usage_mem_uss = round(psutil.Process(pid).memory_percent('uss'), 5)
 
-                        print(eachcode, ntime, elapesd_time_crawl, elapesd_time_candle, elapesd_time_calcindex, elapesd_time_ifalert,
-                              usage_cpu, usage_mem_rss, usage_mem_vms, usage_mem_wset, usage_mem_uss)
+                        print(eachcode, ntime, meta
+                              ,'\t', elapesd_time_crawl, elapesd_time_candle, elapesd_time_calcindex, elapesd_time_ifalert
+                              ,'\t', usage_cpu, usage_mem_rss, usage_mem_vms, usage_mem_wset, usage_mem_uss)
 
 
-                    # except:
-                    #         print("*** %s, CONNECTION ERROR"%(eachcode))
-                    # time.sleep(0.1) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한종목당 0.1초 슬립
-                time.sleep(0.1) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한그룹 다돌면 30초씩 슬립하도록
+                    except:
+                            print("*** %s, CONNECTION ERROR"%(eachcode))
+                    time.sleep(0.1) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한종목당 0.1초 슬립
+                time.sleep(0.1 if len(self.stock_dict)<2 else 10) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한그룹 다돌면 10초씩 슬립하도록
 
 
     def run(self):
