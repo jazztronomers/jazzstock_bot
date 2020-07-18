@@ -131,17 +131,17 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                         result = ret['result']
                         meta = [float(x) for x in ret['meta']]
 
-                        usage_cpu = psutil.Process(pid).cpu_percent() / psutil.cpu_count()
-                        usage_mem_rss = round(psutil.Process(pid).memory_percent('rss'),5)
-                        usage_mem_vms = round(psutil.Process(pid).memory_percent('vms'),5)
-                        usage_mem_uss = round(psutil.Process(pid).memory_percent('uss'), 5)
+                        usage_cpu = round(psutil.cpu_percent() / psutil.cpu_count(),2)
+                        usage_mem_rss = round(psutil.Process(pid).memory_percent('rss'),3)
+                        usage_mem_vms = round(psutil.Process(pid).memory_percent('vms'),3)
+                        usage_mem_uss = round(psutil.Process(pid).memory_percent('uss'), 3)
 
                         usage_list = [usage_cpu, usage_mem_rss, usage_mem_vms, usage_mem_uss]
                         if platform_name=='Windows':
-                            usage_list.append(round(psutil.Process(pid).memory_percent('wset'), 5))
+                            usage_list.append(round(psutil.Process(pid).memory_percent('wset'), 3))
                         if platform_name=='Linux':
-                            usage_list.append(round(psutil.Process(pid).memory_percent('pss'), 5))
-                            usage_list.append(round(psutil.Process(pid).memory_percent('swap'), 5))
+                            usage_list.append(round(psutil.Process(pid).memory_percent('pss'), 3))
+                            usage_list.append(round(psutil.Process(pid).memory_percent('swap'), 3))
 
 
 
