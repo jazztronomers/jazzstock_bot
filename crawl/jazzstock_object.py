@@ -83,16 +83,16 @@ class JazzstockObject:
                , ROUND(D.D,3) AS D
                , ROUND(D.J,3) AS J
         FROM jazzdb.T_STOCK_OHLC_DAY A
-        JOIN jazzdb.T_STOCK_SND_DAY B USING (STOCKCODE, DATE)
-        JOIN jazzdb.T_STOCK_BB C USING (STOCKCODE, DATE)
-        JOIN jazzdb.T_STOCK_STOCH D USING (STOCKCODE, DATE)
-        JOIN jazzdb.T_DATE_INDEXED E USING (DATE)
+        LEFT JOIN jazzdb.T_STOCK_SND_DAY B USING (STOCKCODE, DATE)
+        LEFT JOIN jazzdb.T_STOCK_BB C USING (STOCKCODE, DATE)
+        LEFT JOIN jazzdb.T_STOCK_STOCH D USING (STOCKCODE, DATE)
+        LEFT JOIN jazzdb.T_DATE_INDEXED E USING (DATE)
         WHERE 1=1
         AND STOCKCODE = '%s'
         AND CNT BETWEEN %s AND %s
         ORDER BY DATE ASC
 
-        ''' % (self.stockcode, cntto, window)
+        ''' % (self.stockcode, cntto, cntto+window)
 
         # DB에 없는 값들은 util.index_calculator.py 를 사용해서 계산
         df = db.selectpd(query)
@@ -103,8 +103,10 @@ class JazzstockObject:
             df = df[columns]
 
         self.df_ohlc_day = df
-        self.sr_daily=df.iloc[-1]
-
+        try:
+            self.sr_daily=df.iloc[-1]
+        except Exception as e:
+            print(" * ERROR : %s"%(e))
 
 
     def set_ohlc_min_from_db(self, window=1, cntto=0):
