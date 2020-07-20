@@ -150,7 +150,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         :return:
         '''
         marketready = datetime.strptime('08:40:00', '%H:%M:%S').time()
-        marketopen = datetime.strptime('09:00:00', '%H:%M:%S').time()
+        marketopen = datetime.strptime('09:02:00', '%H:%M:%S').time()
         marketclose = datetime.strptime('15:30:00', '%H:%M:%S').time()
         
         self.initialize_dataframe(cntto=0)
