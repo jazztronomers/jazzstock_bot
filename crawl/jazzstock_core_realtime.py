@@ -32,31 +32,18 @@ class JazzstockCoreRealtime:
 
     def run(self):
         '''
-
         :return:
         '''
         pass
-
 
     def debug(self):
         '''
-
-
         :return:
         '''
         pass
 
 
-    def alert(self):
-        '''
 
-        실시간수집된 정보를 처리하여, 액션이 필요한 경우 MASTER로 MESSAGE를 보낸다
-        여기서 MASTER는 실제 매수매도를 진행할 수 있는 윈도우서버
-        또는 TELEGRAM BOT 서버를 얘기한다.
-
-        :return:
-        '''
-        pass
 
 
 class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
@@ -73,8 +60,6 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         self.RECEIVER_DEBUG = cf.TELEBOT_DEBUG
         self.BOT = telepot.Bot(self.TOKEN)
         # =========================================================
-
-
 
     def initialize_dataframe(self, cntto=0):
         '''
@@ -145,7 +130,6 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                             usage_list.append(round(psutil.Process(pid).memory_percent('swap'), 3))
 
 
-
                         print(eachcode, ntime, meta
                               ,'\t', elapesd_time_crawl, elapesd_time_candle, elapesd_time_calcindex, elapesd_time_ifalert
                               ,'\t', usage_list)
@@ -159,7 +143,6 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                 else:
                     print(' * LEN : %s : %s' %(len(self.stock_dict.keys()),datetime.now()-st))
                     time.sleep(10) # 대책없이 긁으면 네이버에 막힐 수 있으므로, 한그룹 다돌면 10초씩 슬립하도록
-
 
     def run(self):
         '''
@@ -187,7 +170,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
 
                         st = datetime.now()
                         for eachcode in self.stock_dict.keys():
-                            try:
+                            # try:
                                 elapesd_time_d =self.stock_dict[eachcode].set_ohlc_min_from_naver()['elapsed_time']
                                 elapesd_time_a = self.stock_dict[eachcode].set_candle_five()['elapsed_time']
                                 elapesd_time_b = self.stock_dict[eachcode].fill_index()['elapsed_time']
@@ -196,17 +179,17 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                                 
                                 elapesd_time_c = temp['elapsed_time']
                                 
-                                if 'result' in temp.keys():
+                                if 'result' in temp.keys() and temp['result'] is not None:
                                     self.send_message_telegram(temp['result'])
 
                                 print(eachcode, elapesd_time_d, elapesd_time_a, elapesd_time_b, elapesd_time_c)
 
-                            except:
-                                time.sleep(4)
-                                print('==='*30)
-                                print(' C O N N E C T I O N E R R O R')
-                                print('==='*30)
-                                self.stock_dict[eachcode].set_ohlc_min_from_naver()['elapsed_time']
+                            # except Exception as e:
+                            #     time.sleep(4)
+                            #     print('==='*30)
+                            #     print(' ERROR : %s'%(e))
+                            #     print('==='*30)
+                            #     self.stock_dict[eachcode].set_ohlc_min_from_naver()['elapsed_time']
 
 
                         print('\n')
@@ -233,7 +216,8 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         :param message: dictionary
         :return:
         '''
-        
+
+        print(message_dic)
         for k,v in message_dic.items():
             print(k, v)
         
@@ -249,13 +233,8 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
             self.BOT.sendMessage(self.RECEIVER_SERVICE, '%s' % (message))
         else:
             print(' * INFO: TELEGRAM TOKEN OR MESSAGE RECEIVER NOT SPECIFIED')
-            
-            
-    def send_message_master(self):
-        '''
-        마스터 노드로 메세지를 보내는 함수, 미구현
-        '''
-        pass
+
+
 
 
 if __name__ == '__main__':
