@@ -170,7 +170,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
 
                         st = datetime.now()
                         for eachcode in self.stock_dict.keys():
-                            # try:
+                            try:
                                 elapesd_time_d =self.stock_dict[eachcode].set_ohlc_min_from_naver()['elapsed_time']
                                 elapesd_time_a = self.stock_dict[eachcode].set_candle_five()['elapsed_time']
                                 elapesd_time_b = self.stock_dict[eachcode].fill_index()['elapsed_time']
@@ -184,12 +184,10 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
 
                                 print(eachcode, elapesd_time_d, elapesd_time_a, elapesd_time_b, elapesd_time_c)
 
-                            # except Exception as e:
-                            #     time.sleep(4)
-                            #     print('==='*30)
-                            #     print(' ERROR : %s'%(e))
-                            #     print('==='*30)
-                            #     self.stock_dict[eachcode].set_ohlc_min_from_naver()['elapsed_time']
+                            except Exception as e:
+                                time.sleep(1)
+                                print('==='*30)
+                                print(' * ERROR : %s, %s'%(eachcode, e))
 
 
                         print('\n')
