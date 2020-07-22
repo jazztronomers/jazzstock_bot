@@ -5,6 +5,7 @@ cd /workspace/jazzstock_bot
 git checkout -- .
 
 
-git pull origin master
+git pull origin master >> debug_$INSTANCE_ID_$DATE.log
+sleep 10
 python3 -u /workspace/jazzstock_bot/main/main_crawlnaver_run.py $INSTANCE_ID >> debug_$INSTANCE_ID_$DATE.log &
 
