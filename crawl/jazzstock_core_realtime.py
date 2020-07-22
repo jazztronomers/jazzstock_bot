@@ -111,10 +111,15 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                         elapesd_time_crawl = self.stock_dict[eachcode].set_ohlc_min_from_naver(is_debug=ntime, debug_date=self.stock_dict[eachcode].the_date)['elapsed_time']
                         elapesd_time_candle = self.stock_dict[eachcode].set_candle_five()['elapsed_time']
                         elapesd_time_calcindex = self.stock_dict[eachcode].fill_index()['elapsed_time']
-                        ret = self.stock_dict[eachcode].check_status(logmode=1) # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하
+                        ret = self.stock_dict[eachcode].check_status(
+                            logmode=1)  # 현재는 출력만 하고 있지만, 본 함수에 alert 또는 매매로직을 구현하
+
+
 
                         elapesd_time_ifalert = ret['elapsed_time']
-                        result = ret['result']
+                        if 'result' in ret.keys() and ret['result'] is not None:
+                            self.send_message_telegram(ret['result'])
+
                         meta = [float(x) for x in ret['meta']]
 
                         usage_cpu = round(psutil.cpu_percent() / psutil.cpu_count(),2)
@@ -220,13 +225,24 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
             print(k, v)
         
         if self.RECEIVER_SERVICE and self.TOKEN:
-            message = '%s (%s) : %s / '%(message_dic['STOCKNAME'], message_dic['STOCKCODE'],message_dic['TIME'])
-            message = message+'%s\n'%(message_dic['COND_NAME'])
-            message = message+'PMR | %.3f / %.3f / %.3f\n'%(message_dic['PSMAR5'],message_dic['PSMAR20'],message_dic['PSMAR60'])
-            message = message+'VMR | %.3f / %.3f / %.3f\n'%(message_dic['VSMAR5'],message_dic['VSMAR20'],message_dic['VSMAR60'])
-            message = message+'KDJ | %.3f / %.3f / %.3f\n' %(message_dic['K'], message_dic['D'],message_dic['J'])
-            message = message+'BPW | %.3f / %.3f\n\n'%(message_dic['BBP'], message_dic['BBW'])
-            message = message+'finance.naver.com/item/main.nhn?code=%s'%(message_dic['STOCKCODE'])
+
+            FLUCT = message_dic['CLOSE'] - self.stock_dict[message_dic['STOCKCODE']].dict_prev['01D_CLOSE']
+            FLUCTRATIO = FLUCT / self.stock_dict[message_dic['STOCKCODE']].dict_prev['01D_CLOSE']
+
+            if FLUCT >= 0:
+                FLUCT = '+%s'%(FLUCT)
+                FLUCTRATIO = '+%.2f%%'%(FLUCTRATIO*100)
+
+            else:
+                FLUCT = '%s' % (FLUCT)
+                FLUCTRATIO = '%.2f%%' % (FLUCTRATIO * 100)
+
+            message = '%s (%s) : %s / %s \n'%(message_dic['STOCKNAME'], message_dic['STOCKCODE'], message_dic['TIME'], message_dic['COND_NAME'])
+            message = message + 'CLSE | %s (%s, %s)\n' % (message_dic['CLOSE'], FLUCT, FLUCTRATIO)
+            message = message + 'PMAR | %.3f / %.3f / %.3f\n'%(message_dic['PSMAR5'],message_dic['PSMAR20'],message_dic['PSMAR60'])
+            message = message + 'VMAR | %.3f / %.3f / %.3f\n'%(message_dic['VSMAR5'],message_dic['VSMAR20'],message_dic['VSMAR60'])
+            message = message + 'BBPW | %.3f / %.3f\n\n'%(message_dic['BBP'], message_dic['BBW'])
+            message = message + 'finance.naver.com/item/main.nhn?code=%s'%(message_dic['STOCKCODE'])
 
             self.BOT.sendMessage(self.RECEIVER_SERVICE, '%s' % (message))
         else:
