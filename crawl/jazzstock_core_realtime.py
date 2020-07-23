@@ -59,7 +59,9 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         self.RECEIVER_SERVICE = cf.TELEBOT_ID
         self.RECEIVER_DEBUG = cf.TELEBOT_DEBUG
         self.BOT = telepot.Bot(self.TOKEN)
-        # =========================================================
+        # COMMON ==================================================
+        self.THEDATE=the_date
+
 
     def initialize_dataframe(self, cntto=0):
         '''
@@ -106,6 +108,8 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
             for i in range(0, 60, n):
                 ntime = '%s%s00' % (str(j).zfill(2), str(i).zfill(2))
                 st =datetime.now()
+
+                record = []
                 for eachcode in self.stock_dict.keys():
                     try:
                         elapesd_time_crawl = self.stock_dict[eachcode].set_ohlc_min_from_naver(is_debug=ntime, debug_date=self.stock_dict[eachcode].the_date)['elapsed_time']
@@ -119,6 +123,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                         elapesd_time_ifalert = ret['elapsed_time']
                         if 'result' in ret.keys() and ret['result'] is not None:
                             self.send_message_telegram(ret['result'])
+                            record.append(ret['result'])
 
                         meta = [float(x) for x in ret['meta']]
 
@@ -142,6 +147,8 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
 
                     except Exception as e:
                             print(" ** %s | ERROR: %s"%(eachcode, e))
+
+                self.send_message_logging(record)
 
                 if len(self.stock_dict) < 2:
                     time.sleep(0.1)
@@ -174,6 +181,8 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                     else:
 
                         st = datetime.now()
+
+                        record = []
                         for eachcode in self.stock_dict.keys():
                             try:
                                 elapesd_time_d =self.stock_dict[eachcode].set_ohlc_min_from_naver()['elapsed_time']
@@ -186,6 +195,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                                 
                                 if 'result' in temp.keys() and temp['result'] is not None:
                                     self.send_message_telegram(temp['result'])
+                                    record.append(temp['result'])
 
                                 print(eachcode, elapesd_time_d, elapesd_time_a, elapesd_time_b, elapesd_time_c)
 
@@ -193,6 +203,11 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                                 time.sleep(1)
                                 print('==='*30)
                                 print(' * ERROR : %s, %s'%(eachcode, e))
+
+
+                        self.send_message_logging(record)
+
+
 
 
                         print('\n')
@@ -249,7 +264,16 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
             print(' * INFO: TELEGRAM TOKEN OR MESSAGE RECEIVER NOT SPECIFIED')
 
 
+    def send_message_logging(self, record_list):
+        '''
 
+        :param record_list: 탤래그램으로 보낸 모든 메세지를 로그파일로 저장
+        :return:
+        '''
+        f = open('record_%s.log' % (self.THEDATE), 'a')
+        for each in record_list:
+            f.write('%s\n'%(each))
+        f.close()
 
 if __name__ == '__main__':
 
