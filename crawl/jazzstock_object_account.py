@@ -66,7 +66,7 @@ class JazzstockObject_Account(JazzstockObject):
         return float(row.CLOSE * amount)
 
     def _record(self, action, row, amount, profit=0):
-        print('* ', self.stockname, action, int(row.CLOSE), str(row.DATE.values), str(row.TIME.values), amount, int(profit))
+        print(' * LOG ', self.stockname, action, int(row.CLOSE), str(row.DATE.values), str(row.TIME.values), amount, int(profit))
 
     def check_status(self, row):
 

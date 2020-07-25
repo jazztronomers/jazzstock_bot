@@ -34,6 +34,7 @@ class JazzstockCoreSimulation:
         :param to:
         :param condition:
         '''
+
         self.obj = JazzstockObject_Account(stockcode, the_date, the_date_index, purchased, amount)
         self.obj.set_ohlc_day_from_db_include_index(cntto=the_date_index + 1, window=60)       # to + 1, 즉 시뮬레이션 전 거래일 까지의 일봉정보를 가져옴
         self.obj.set_ohlc_min_from_db(cntto=the_date_index, window=1)                          # to 거래일 까지의 5분봉을 가져옴
@@ -82,7 +83,7 @@ class JazzstockCoreSimulationCustom(JazzstockCoreSimulation):
         for row in self.obj.df_ohlc_realtime_filled.values:
             tempdf = pd.DataFrame(data=[row], columns=self.obj.df_ohlc_realtime_filled.columns)
 
-            print(tempdf)
+            # print(tempdf)
 
             ret = self.obj.simul_all_condition_iteration(self.condition_list, tempdf)['result']
             if ret:
@@ -131,8 +132,7 @@ if __name__=='__main__':
     stock_dic = {}
 
     
-    for each_idx in range (20, -1 ,-1):
-        the_date = index_to_date(each_idx)
+
 
         # Q = '''
         #
@@ -151,17 +151,18 @@ if __name__=='__main__':
         #
         # print(len(sl))
 
-        sl = ['060590']
+    sl = ['079940']
 
-        for stockcode in sl:
-
+    for stockcode in sl:
+        for each_idx in range(40, -1, -1):
+            the_date = index_to_date(each_idx)
             if stockcode not in stock_dic.keys():
                 stock_dic[stockcode]= (0, 0, 0, 0 ,0)
                 print(' * %s INIT'%(stockcode))
             t = JazzstockCoreSimulationCustom(stockcode, the_date=the_date, the_date_index=each_idx, purchased=stock_dic[stockcode][0], amount=stock_dic[stockcode][1])
             try:
 
-                print(' * START %s / %s ' %(stockcode, the_date))
+                # print(' * START %s / %s ' %(stockcode, the_date))
                 hold_purchased, amount, profit, purchased, selled = t.simulate()
                 temp = list(stock_dic[stockcode])
                 temp[0] = int(hold_purchased)
@@ -170,7 +171,8 @@ if __name__=='__main__':
                 temp[3] = temp[3] + purchased
                 temp[4] = temp[4] + selled
                 stock_dic[stockcode] = tuple(temp)
-                print(' * END %s / %s' %(stockcode,the_date), stockcode, stock_dic[stockcode], summary(stock_dic[stockcode]))
+                print(' * SUMMARY_DAILY : %s / %s' %(stockcode,the_date), stock_dic[stockcode], summary(stock_dic[stockcode]))
             except Exception as e:
 
                 print(' * ERROR %s, %s '%(e, stockcode))
+        print(' * SUMMARY_WHOLE : %s / %s' % (stockcode, the_date), stock_dic[stockcode], summary(stock_dic[stockcode]))
