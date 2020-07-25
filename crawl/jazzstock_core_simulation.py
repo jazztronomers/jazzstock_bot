@@ -1,3 +1,4 @@
+import sys
 import common.connector_db as db
 import util.index_calculator as ic
 import pandas as pd
@@ -128,30 +129,12 @@ def index_to_date(idx):
 
 if __name__=='__main__':
 
-    sl = []
     stock_dic = {}
 
-    
-
-
-        # Q = '''
-        #
-        # SELECT STOCKCODE
-        # FROM jazzdb.T_STOCK_MC
-        # WHERE 1=1
-        # AND DATE = '%s'
-        # AND MC BETWEEN 1.5 AND 1.7;
-        #
-        # '''%(the_date)
-        #
-        # ap = db.selectSingleColumn(Q)
-        # for each in ap:
-        #     if each not in sl:
-        #         sl.append(each)
-        #
-        # print(len(sl))
 
     sl = ['079940']
+    if len(sys.argv)>1:
+        sl= sys.argv[1:]
 
     for stockcode in sl:
         for each_idx in range(40, -1, -1):
