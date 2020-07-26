@@ -1,11 +1,6 @@
 from crawl.jazzstock_object import JazzstockObject
 from datetime import datetime
-import config.condition as cf
 import copy
-
-
-condition_dict = cf.TESTCOND
-
 class JazzstockObject_Account(JazzstockObject):
 
     def __init__(self, stockcode, the_date, the_date_index, purchased=0, amount=0):
@@ -67,6 +62,8 @@ class JazzstockObject_Account(JazzstockObject):
 
     def _record(self, action, row, amount, profit=0):
         print(' * LOG ', self.stockname, action, int(row.CLOSE), str(row.DATE.values), str(row.TIME.values), amount, int(profit))
+        pass
+
 
     def check_status(self, row):
 

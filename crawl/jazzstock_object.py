@@ -16,7 +16,7 @@ try:
 except:
     timedf = pd.read_csv('config/time.csv', dtype=str)
 
-condition_dict = cf.TESTCOND    
+condition_dict = cf.COND_PROD
 
 tdic = {}
 for tk, t1, t5, t15 in sorted(timedf.values.tolist()):
@@ -130,8 +130,8 @@ class JazzstockObject:
 
         self.df_ohlc_min = db.selectpd(query)
 
-        if(cntto==0 and window==1):
-            print(" * %s(%s)의 %s일치 5분봉데이터를 DB에서 조회해왔습니다" % (self.stockname, self.stockcode, window))
+        # if(cntto==0 and window==1):
+        #     print(" * %s(%s)의 %s일치 5분봉데이터를 DB에서 조회해왔습니다" % (self.stockname, self.stockcode, window))
         elapsed_time = (datetime.now() - st)
         return {'elapsed_time': '%s.%06d'%(elapsed_time.seconds, elapsed_time.microseconds)}
 

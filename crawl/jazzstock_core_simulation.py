@@ -6,13 +6,8 @@ import config.condition as cf
 from datetime import datetime
 from crawl.jazzstock_object_account import JazzstockObject_Account
 
-
-
 pd.options.display.max_rows = 1000
 pd.options.display.max_columns= 500
-
-
-condition_dict = cf.TESTCOND 
 # =====================================================================================
 # 추가구현시 CLASS, FUNCTION 네이밍 참조:
 # =====================================================================================
@@ -27,7 +22,7 @@ condition_dict = cf.TESTCOND
 
 
 class JazzstockCoreSimulation:
-    def __init__(self, stockcode, the_date, the_date_index, purchased=0, amount=0):
+    def __init__(self, stockcode, condition_dict, the_date, the_date_index, purchased=0, amount=0):
         '''
 
         :param stockcode:
@@ -45,6 +40,8 @@ class JazzstockCoreSimulation:
         self.obj.df_ohlc_realtime_filled = self.obj.df_ohlc_realtime_filled[self.obj.df_ohlc_realtime_filled.DATE==the_date]
         self.COLUMNS_DAY=['DATE', 'TIME', 'CLOSE', 'VSMAR20', 'BBP', 'BBW', 'K', 'D', 'J']
         self.COLUMNS_MIN = ['DATE', 'TIME', 'CLOSE', 'VSMAR20', 'BBP', 'BBW', 'K', 'D', 'J']
+
+        self.condition_dict = condition_dict
 
         # DEBUGGING ================================================
         # print(self.obj.df_ohlc_day.tail(2))
@@ -67,9 +64,8 @@ class JazzstockCoreSimulation:
         '''
 
 class JazzstockCoreSimulationCustom(JazzstockCoreSimulation):
-    def __init__(self, stockcode, the_date, the_date_index, purchased, amount):
-        super().__init__(stockcode, the_date, the_date_index, purchased, amount)
-        self.condition_list = cf.TESTCOND
+    def __init__(self, stockcode, condition_dict, the_date, the_date_index, purchased, amount):
+        super().__init__(stockcode, condition_dict, the_date, the_date_index, purchased, amount)
 
 
     def simulate(self):
@@ -83,19 +79,24 @@ class JazzstockCoreSimulationCustom(JazzstockCoreSimulation):
         st = datetime.now()
         for row in self.obj.df_ohlc_realtime_filled.values:
             tempdf = pd.DataFrame(data=[row], columns=self.obj.df_ohlc_realtime_filled.columns)
+            ret = self.obj.simul_all_condition_iteration(self.condition_dict, tempdf)['result']
 
-            # print(tempdf)
 
-            ret = self.obj.simul_all_condition_iteration(self.condition_list, tempdf)['result']
+            # =====================================================================
+            # 팔때는 굳이 조건 탈 필요 없는데, 조건에 해당되야 팔도록 되어있음......
+            # 여기 수정 필요.....
+            # =====================================================================
+
             if ret:
+                print(ret)
                 res = self.obj.check_status(ret[0])
-
                 if 'purchased' in res.keys():
                     purchased += res['purchased']
                 elif 'selled' in res.keys():
                     selled += res['selled']
 
-        return self.obj.purchased, self.obj.amount, self.obj.profit, purchased, selled
+        close_day = self.obj.df_ohlc_realtime_filled.CLOSE.tail(1).values[0]
+        return self.obj.purchased, self.obj.amount, self.obj.profit, purchased, selled, close_day
         # ret = self.obj.simul_all_condition(self.condition_list)['result']
 
 
@@ -113,7 +114,7 @@ def summary(tpl):
     hist_purchased = tpl[3]- tpl[0]
     hist_selled = tpl[-1]
 
-    return '평단 %.1f, 누적매수 %.1f, 누적매도 %.1f, 누적수익 %.1f' %(avg, hist_purchased, hist_selled, tpl[2])
+    return avg, hist_purchased, hist_selled
 
 
 
@@ -129,24 +130,62 @@ def index_to_date(idx):
 
 if __name__=='__main__':
 
-    stock_dic = {}
 
 
-    sl = ['079940']
-    if len(sys.argv)>1:
-        sl= sys.argv[1:]
 
-    for stockcode in sl:
-        for each_idx in range(40, -1, -1):
-            the_date = index_to_date(each_idx)
-            if stockcode not in stock_dic.keys():
-                stock_dic[stockcode]= (0, 0, 0, 0 ,0)
-                print(' * %s INIT'%(stockcode))
-            t = JazzstockCoreSimulationCustom(stockcode, the_date=the_date, the_date_index=each_idx, purchased=stock_dic[stockcode][0], amount=stock_dic[stockcode][1])
-            try:
+    if len(sys.argv)==3:
+        sl= sys.argv[1]
+        d_from = sys.argv[2]
+        t_list = [cf.COND_TEST1, cf.COND_TEST2, cf.COND_TEST3][sys.argv[3]]
+    else:
+        query = '''
+        SELECT STOCKCODE
+        FROM
+        (
+            SELECT STOCKCODE, 
+                    CASE WHEN RN <= 120 THEN "A"
+                         WHEN RN <= 240 THEN "B"
+                         WHEN RN <= 360 THEN "C"
+                         WHEN RN <= 480 THEN "D"
+                         WHEN RN <= 600 THEN "E"
+                         WHEN RN <= 720 THEN "F"
+                         WHEN RN <= 840 THEN "G"
+                         ELSE "H" END AS GRP
+            FROM
+            (
+                SELECT STOCKCODE, 
+                    ROW_NUMBER() OVER (PARTITION BY DATE ORDER BY I5+F5 DESC) AS RN
+                FROM jazzdb.T_STOCK_SND_ANALYSIS_RESULT_TEMP
+                JOIN jazzdb.T_DATE_INDEXED USING (DATE)
+                JOIN jazzdb.T_STOCK_MC USING (STOCKCODE, DATE)
+                WHERE 1=1
+                AND CNT = 0
+                AND MC > 1          # 1300종목
+            ) A
+        ) B        
+        WHERE 1=1
+        AND GRP IN ('A')
+        LIMIT 10
+        '''
+        sl = db.selectSingleColumn(query)
+        sl = ['095610']
+        d_from = 5
+
+
+    for j, cond in enumerate([cf.COND_TEST1, cf.COND_TEST2]):
+        condition_dict = cond
+        stock_dic = {}
+        print('* -----------------------------------------------')
+        for stockcode in sl:
+            for each_idx in range(d_from, -1, -1):
+                the_date = index_to_date(each_idx)
+                if stockcode not in stock_dic.keys():
+                    stock_dic[stockcode]= (0, 0, 0, 0 ,0)
+                t = JazzstockCoreSimulationCustom(stockcode, condition_dict, the_date=the_date, the_date_index=each_idx, purchased=stock_dic[stockcode][0], amount=stock_dic[stockcode][1])
+                #try:
 
                 # print(' * START %s / %s ' %(stockcode, the_date))
-                hold_purchased, amount, profit, purchased, selled = t.simulate()
+                hold_purchased, amount, profit, purchased, selled, close_day, = t.simulate()
                 temp = list(stock_dic[stockcode])
                 temp[0] = int(hold_purchased)
                 temp[1] = int(amount)
@@ -154,8 +193,18 @@ if __name__=='__main__':
                 temp[3] = temp[3] + purchased
                 temp[4] = temp[4] + selled
                 stock_dic[stockcode] = tuple(temp)
-                print(' * SUMMARY_DAILY : %s / %s' %(stockcode,the_date), stock_dic[stockcode], summary(stock_dic[stockcode]))
-            except Exception as e:
 
-                print(' * ERROR %s, %s '%(e, stockcode))
-        print(' * SUMMARY_WHOLE : %s / %s' % (stockcode, the_date), stock_dic[stockcode], summary(stock_dic[stockcode]))
+                PH, AH, PR, _, _ = stock_dic[stockcode]
+                AV, HP, HS = summary(stock_dic[stockcode])
+
+                if AV != 0:
+                    PROFIT_RATIO = round(( close_day - AV ) / close_day,3)*100
+                else:
+                    PROFIT_RATIO = 0
+
+                # print('* SM_DAILY_%s, %s, %s, %s // %s, %.1f%%, %s, %s // %s, %s, %s'%(list(condition_dict.keys())[0], stockcode, the_date, close_day, AV, PROFIT_RATIO, AH, PH, HP, HS, PR))
+                # except Exception as e:
+                #     print('* ERROR %s, %s '%(e, stockcode))
+            # print('* SM_WHOLE_%s, %s, %s, %s // %s, %.1f%%, %s, %s // %s, %s, %s'%(list(condition_dict.keys())[0], stockcode, the_date, close_day, AV, PROFIT_RATIO, AH, PH, HP, HS, PR))
+            # print('* SM_WHOLE_%s, %s, %s, %s // %s, %.1f%%, %s, %s, %s // %s, %s, %s' % (list(condition_dict.keys())[0], stockcode, the_date, close_day, AV, PROFIT_RATIO, AH, PH, AH * close_day, HP, HS, PR))
+            print('* SM_WHOLE_%s, %s, %s, %s, %s, %s' % (list(condition_dict.keys())[0], stockcode, the_date, PH, AH * close_day, PR))
