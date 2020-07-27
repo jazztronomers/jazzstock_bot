@@ -77,6 +77,7 @@ class JazzstockCoreSimulationCustom(JazzstockCoreSimulation):
 
         purchased, selled = 0, 0
         st = datetime.now()
+
         for row in self.obj.df_ohlc_realtime_filled.values:
             tempdf = pd.DataFrame(data=[row], columns=self.obj.df_ohlc_realtime_filled.columns)
             ret = self.obj.simul_all_condition_iteration(self.condition_dict, tempdf)['result']
@@ -88,7 +89,6 @@ class JazzstockCoreSimulationCustom(JazzstockCoreSimulation):
             # =====================================================================
 
             if ret:
-                print(ret)
                 res = self.obj.check_status(ret[0])
                 if 'purchased' in res.keys():
                     purchased += res['purchased']
@@ -168,11 +168,11 @@ if __name__=='__main__':
         LIMIT 10
         '''
         sl = db.selectSingleColumn(query)
-        sl = ['095610']
+        sl = ['001200']
         d_from = 5
 
 
-    for j, cond in enumerate([cf.COND_TEST1, cf.COND_TEST2]):
+    for j, cond in enumerate([cf.COND_TEST1]):
         condition_dict = cond
         stock_dic = {}
         print('* -----------------------------------------------')
@@ -184,7 +184,7 @@ if __name__=='__main__':
                 t = JazzstockCoreSimulationCustom(stockcode, condition_dict, the_date=the_date, the_date_index=each_idx, purchased=stock_dic[stockcode][0], amount=stock_dic[stockcode][1])
                 #try:
 
-                # print(' * START %s / %s ' %(stockcode, the_date))
+                print(' * START %s / %s ' %(stockcode, the_date))
                 hold_purchased, amount, profit, purchased, selled, close_day, = t.simulate()
                 temp = list(stock_dic[stockcode])
                 temp[0] = int(hold_purchased)

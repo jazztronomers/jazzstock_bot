@@ -438,7 +438,7 @@ class JazzstockObject:
                     break
                 else:
                     cond_df['COND_NAME']=cond_name
-            if ~flag and len(cond_df)>0:
+            if flag and len(cond_df)>0:
                 ret.append(cond_df.copy())
 
         return {"result":ret, "elapsed_time": datetime.now()-st}
