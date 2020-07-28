@@ -16,28 +16,14 @@ else:
 
 print(" * CONDITION INITIALIZED, instance_id: %s" %(INSTANCE_ID))
 COND_PROD = {
-    
 
-    # '%s01_HV_V3o5_P2o20'%(INSTANCE_ID): {
-    #                 'PSMAR20': ['BIGGER', 0.02],
-    #                 'VSMAR5': ['BIGGER', 3],
-    #                 'TRADINGVALUE': ['BIGGER',1]
-    # },
 
-    '%s02_HV_V5o5_P2o20'%(INSTANCE_ID): {
+    '%s_거래량동반돌파'%(INSTANCE_ID): {
                     'PSMAR60': ['BIGGER',0.02],
                     'VSMAR20': ['BIGGER', 5],
                     'TRADINGVALUE': ['BIGGER',1]
     },
 
-    # '%s_02_BIG_K_VOL'%(INSTANCE_ID): {
-    #                 'K': ['BIGGER' , 0.95],
-    #                 'VSMAR5':['BIGGER', 7],
-    #                 'TRADINGVALUE':['BIGGER',2]
-    # },
-    #     'T04_DEBUG': {
-    #                     'CLOSE': ['BIGGER', 10000],
-    #     },
 
 }
 
