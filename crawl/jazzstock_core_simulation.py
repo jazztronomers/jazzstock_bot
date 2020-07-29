@@ -160,9 +160,9 @@ if __name__=='__main__':
         # sl = db.selectSingleColumn(query)
         sl = ['100130']
         d_from = 20
+        tlist=[cf.COND_TEST1, cf.COND_PROD]
 
-
-    for j, cond in enumerate([cf.COND_TEST1, cf.COND_PROD]):
+    for j, cond in enumerate(t_list):
         condition_buy = cond
         condition_sell = cf.COND_SELL
         stock_dic = {}
