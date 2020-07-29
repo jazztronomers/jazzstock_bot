@@ -25,10 +25,8 @@ class JazzstockObject_Account(JazzstockObject):
                 if (len(cond_df) == 0):
                     flag = False
                     break
-                else:
-                    cond_df['COND_NAME'] = cond_name
             if ~flag and len(cond_df) > 0:
-                ret.append(cond_df.copy())
+                ret.append(cond_name)
 
         return {"result": ret, "elapsed_time": datetime.now() - st}
 
@@ -61,15 +59,15 @@ class JazzstockObject_Account(JazzstockObject):
         return float(row.CLOSE * amount)
 
     def _record(self, action, row, amount, profit=0):
-        print(' * LOG ', self.stockname, action, int(row.CLOSE), str(row.DATE.values), str(row.TIME.values), amount, int(profit))
+        print('* ROW ', self.stockname, action, int(row.CLOSE), str(row.DATE.values), str(row.TIME.values), amount, int(profit))
         pass
 
 
-    def check_status(self, row):
+    def check_status(self, row, condition_buy, condition_sell=None):
 
         if (self.amount > 0):
             ifsell = self.shouldsell(row)
-            ifbuy = self.shouldbuy(row)
+            ifbuy = self.shouldbuy(row,condition_buy)
 
             # 팔아야 한다면
             if (ifsell):
@@ -87,16 +85,20 @@ class JazzstockObject_Account(JazzstockObject):
             # 미보유시
         else:
 
-            ifbuy = self.shouldbuy(row)
+            ifbuy = self.shouldbuy(row, condition_buy)
             if (ifbuy):
                 purchased = self._buy(row, ifbuy)
                 return {'purchased': purchased}
             else:
-                pass
+                return {}
 
-    def shouldbuy(self, row):
+    def shouldbuy(self, row, condition_buy):
+        res = self.simul_all_condition_iteration(condition_buy, row)['result']
+        if res:
+            return 100000 // int(row.CLOSE) + 1
+        else:
+            return False
 
-        return 100000 // int(row.CLOSE) + 1
 
     def shouldsell(self, row):
 

@@ -22,7 +22,7 @@ pd.options.display.max_columns= 500
 
 
 class JazzstockCoreSimulation:
-    def __init__(self, stockcode, condition_dict, the_date, the_date_index, purchased=0, amount=0):
+    def __init__(self, stockcode, condition_buy, condition_sell, the_date, the_date_index, purchased=0, amount=0):
         '''
 
         :param stockcode:
@@ -41,7 +41,8 @@ class JazzstockCoreSimulation:
         self.COLUMNS_DAY=['DATE', 'TIME', 'CLOSE', 'VSMAR20', 'BBP', 'BBW', 'K', 'D', 'J']
         self.COLUMNS_MIN = ['DATE', 'TIME', 'CLOSE', 'VSMAR20', 'BBP', 'BBW', 'K', 'D', 'J']
 
-        self.condition_dict = condition_dict
+        self.condition_buy  = condition_buy
+        self.condition_sell = condition_sell
 
         # DEBUGGING ================================================
         # print(self.obj.df_ohlc_day.tail(2))
@@ -64,44 +65,37 @@ class JazzstockCoreSimulation:
         '''
 
 class JazzstockCoreSimulationCustom(JazzstockCoreSimulation):
-    def __init__(self, stockcode, condition_dict, the_date, the_date_index, purchased, amount):
-        super().__init__(stockcode, condition_dict, the_date, the_date_index, purchased, amount)
+    def __init__(self, stockcode, condition_buy, condition_sell, the_date, the_date_index, purchased, amount):
+        super().__init__(stockcode, condition_buy, condition_sell, the_date, the_date_index, purchased, amount)
 
 
-    def simulate(self):
+    def simulate(self, log_level=5):
 
         '''
         한바퀴 다돌림
+        : param log_level   5 : END_SUMMARY
+                            4 : INCLUDE
+                            3 : DAILY_SUMMARY
+                            3 : EACH_BUY/SELL LOG
+
         :return:
         '''
+
+
 
         purchased, selled = 0, 0
         st = datetime.now()
 
         for row in self.obj.df_ohlc_realtime_filled.values:
             tempdf = pd.DataFrame(data=[row], columns=self.obj.df_ohlc_realtime_filled.columns)
-            ret = self.obj.simul_all_condition_iteration(self.condition_dict, tempdf)['result']
-
-
-            # =====================================================================
-            # 팔때는 굳이 조건 탈 필요 없는데, 조건에 해당되야 팔도록 되어있음......
-            # 여기 수정 필요.....
-            # =====================================================================
-
-            if ret:
-                res = self.obj.check_status(ret[0])
-                if 'purchased' in res.keys():
-                    purchased += res['purchased']
-                elif 'selled' in res.keys():
-                    selled += res['selled']
+            res = self.obj.check_status(tempdf, condition_buy, condition_sell=None)
+            if 'purchased' in res.keys():
+                purchased += res['purchased']
+            elif 'selled' in res.keys():
+                selled += res['selled']
 
         close_day = self.obj.df_ohlc_realtime_filled.CLOSE.tail(1).values[0]
         return self.obj.purchased, self.obj.amount, self.obj.profit, purchased, selled, close_day
-        # ret = self.obj.simul_all_condition(self.condition_list)['result']
-
-
-
-
 
 
 def summary(tpl):
@@ -116,8 +110,6 @@ def summary(tpl):
 
     return avg, hist_purchased, hist_selled
 
-
-
 def date_to_index(date):
     cnt = db.selectSingleValue("SELECT CNT FROM jazzdb.T_DATE_INDEXED WHERE 1=1 AND DATE = '%s'"%(date))
     return cnt
@@ -127,11 +119,7 @@ def index_to_date(idx):
     return thedate
 
 
-
 if __name__=='__main__':
-
-
-
 
     if len(sys.argv)==3:
         sl= sys.argv[1]
@@ -167,13 +155,14 @@ if __name__=='__main__':
         AND GRP IN ('A')
         LIMIT 10
         '''
-        sl = db.selectSingleColumn(query)
-        sl = ['001200']
-        d_from = 5
+        # sl = db.selectSingleColumn(query)
+        sl = ['100130']
+        d_from = 20
 
 
-    for j, cond in enumerate([cf.COND_TEST1]):
-        condition_dict = cond
+    for j, cond in enumerate([cf.COND_TEST1, cf.COND_PROD]):
+        condition_buy = cond
+        condition_sell = cf.COND_SELL
         stock_dic = {}
         print('* -----------------------------------------------')
         for stockcode in sl:
@@ -181,30 +170,42 @@ if __name__=='__main__':
                 the_date = index_to_date(each_idx)
                 if stockcode not in stock_dic.keys():
                     stock_dic[stockcode]= (0, 0, 0, 0 ,0)
-                t = JazzstockCoreSimulationCustom(stockcode, condition_dict, the_date=the_date, the_date_index=each_idx, purchased=stock_dic[stockcode][0], amount=stock_dic[stockcode][1])
-                #try:
+                t = JazzstockCoreSimulationCustom(stockcode, condition_buy, condition_sell, the_date=the_date, the_date_index=each_idx, purchased=stock_dic[stockcode][0], amount=stock_dic[stockcode][1])
+                try:
 
-                print(' * START %s / %s ' %(stockcode, the_date))
-                hold_purchased, amount, profit, purchased, selled, close_day, = t.simulate()
-                temp = list(stock_dic[stockcode])
-                temp[0] = int(hold_purchased)
-                temp[1] = int(amount)
-                temp[2] = temp[2] + int(profit)
-                temp[3] = temp[3] + purchased
-                temp[4] = temp[4] + selled
-                stock_dic[stockcode] = tuple(temp)
+                    # print(' * START %s / %s ' %(stockcode, the_date))
+                    hold_purchased, amount, profit, purchased, selled, close_day, = t.simulate()
+                    temp = list(stock_dic[stockcode])
+                    temp[0] = int(hold_purchased)
+                    temp[1] = int(amount)
+                    temp[2] = temp[2] + int(profit)
+                    temp[3] = temp[3] + purchased
+                    temp[4] = temp[4] + selled
+                    stock_dic[stockcode] = tuple(temp)
 
-                PH, AH, PR, _, _ = stock_dic[stockcode]
-                AV, HP, HS = summary(stock_dic[stockcode])
+                    PURCHASE_HOLD, AMOUNT_HOLD, PROFIT, _, _ = stock_dic[stockcode]
+                    AVERAGE_HOLD, PURCHASED_CUM, SELL_CUM = summary(stock_dic[stockcode])
 
-                if AV != 0:
-                    PROFIT_RATIO = round(( close_day - AV ) / close_day,3)*100
-                else:
-                    PROFIT_RATIO = 0
+                    if AVERAGE_HOLD != 0:
+                        PROFIT_RATIO = round(( close_day - AVERAGE_HOLD ) / close_day,3)*100
+                    else:
+                        PROFIT_RATIO = 0
 
-                # print('* SM_DAILY_%s, %s, %s, %s // %s, %.1f%%, %s, %s // %s, %s, %s'%(list(condition_dict.keys())[0], stockcode, the_date, close_day, AV, PROFIT_RATIO, AH, PH, HP, HS, PR))
-                # except Exception as e:
-                #     print('* ERROR %s, %s '%(e, stockcode))
+                    print('* DAILY_%s, %s, %s, %s, %s, %s, %s' % (list(condition_buy.keys())[0],
+                                                                     stockcode,
+                                                                     the_date,
+                                                                     PURCHASE_HOLD,  # 보유금액
+                                                                     AMOUNT_HOLD * close_day,  # 평가금액
+                                                                     AMOUNT_HOLD * close_day - PURCHASE_HOLD,  # 기대수익
+                                                                     PROFIT))  # 누적수익)
+                except Exception as e:
+                    print('* ERROR %s, %s '%(e, stockcode))
             # print('* SM_WHOLE_%s, %s, %s, %s // %s, %.1f%%, %s, %s // %s, %s, %s'%(list(condition_dict.keys())[0], stockcode, the_date, close_day, AV, PROFIT_RATIO, AH, PH, HP, HS, PR))
             # print('* SM_WHOLE_%s, %s, %s, %s // %s, %.1f%%, %s, %s, %s // %s, %s, %s' % (list(condition_dict.keys())[0], stockcode, the_date, close_day, AV, PROFIT_RATIO, AH, PH, AH * close_day, HP, HS, PR))
-            print('* SM_WHOLE_%s, %s, %s, %s, %s, %s' % (list(condition_dict.keys())[0], stockcode, the_date, PH, AH * close_day, PR))
+            print('* WHOLE_%s, %s, %s, %s, %s, %s, %s' % (list(condition_buy.keys())[0],
+                                                         stockcode,
+                                                         the_date,
+                                                         PURCHASE_HOLD,             # 보유금액
+                                                         AMOUNT_HOLD * close_day,   # 평가금액
+                                                         AMOUNT_HOLD * close_day - PURCHASE_HOLD, # 기대수익
+                                                         PROFIT))                    # 누적수익)

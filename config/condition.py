@@ -28,11 +28,22 @@ COND_PROD = {
 }
 
 COND_TEST1 = {
-    '%s_TEST01' % (INSTANCE_ID): {
-        'PSMAR5': ['BIGGER', 0.015],
+    '%s_BUY01' % (INSTANCE_ID): {
+        'PSMAR60': ['BIGGER', 0.015],
+        'VSMAR5': ['BIGGER', 3],
         'VSMAR20': ['BIGGER', 5],
-        'TRADINGVALUE': ['BIGGER', 2]
+        'TRADINGVALUE': ['BIGGER', 1]
     },
+}
+
+
+
+COND_SELL = {
+
+    '%s_SELL01' % (INSTANCE_ID): {
+        'PSMAR5': ['BIGGER', 0.005],
+    },
+
 }
 
 
