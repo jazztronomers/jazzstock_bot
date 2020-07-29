@@ -122,10 +122,12 @@ def index_to_date(idx):
 if __name__=='__main__':
 
     if len(sys.argv)==4:
+        print(' * FROM COMMAND LINE')
         sl= sys.argv[1]
         d_from = sys.argv[2]
         t_list = [cf.COND_TEST1, cf.COND_TEST2, cf.COND_TEST3][sys.argv[3]]
     else:
+        print(' * FROM PYCHARM')
         query = '''
         SELECT STOCKCODE
         FROM
