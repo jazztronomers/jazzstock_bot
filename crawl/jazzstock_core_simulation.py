@@ -125,7 +125,7 @@ if __name__=='__main__':
         stocklist = [sys.argv[1]]
         day_from = int(sys.argv[2])
         day_end = 0
-        condition_label = int(sys.argv[3])
+        condition_label = sys.argv[3]
 
         condition_dic_full = {'A': cf.COND_TEST1,
                     'B': cf.COND_TEST2,
@@ -134,7 +134,7 @@ if __name__=='__main__':
 
         condition_dic_selected = condition_dic_full[condition_label]
 
-        print(' * FROM COMMAND LINE, STOCKCODE: %s, FROM DAY_IDX: %s, CONDITION: %s' %(stocklist[0], day_from, condition_dic_selected.keys()[0]))
+        print(' * FROM COMMAND LINE, STOCKCODE: %s, FROM DAY_IDX: %s, CONDITION: %s' %(stocklist[0], day_from, list(condition_dic_selected.keys())[0]))
     else:
         print(' * FROM PYCHARM')
         query = '''
@@ -171,13 +171,16 @@ if __name__=='__main__':
         d_from = 20
         tlist=[cf.COND_TEST1, cf.COND_PROD]
 
-    for j, cond in enumerate(t_list):
-        condition_buy = cond
+
+
+
+    for j, cond in enumerate(stocklist):
+        condition_buy = condition_dic_selected
         condition_sell = cf.COND_SELL
         stock_dic = {}
         print('* -----------------------------------------------')
-        for stockcode in sl:
-            for each_idx in range(d_from, -1, -1):
+        for stockcode in stocklist:
+            for each_idx in range(day_from, day_end-1, -1):
                 the_date = index_to_date(each_idx)
                 if stockcode not in stock_dic.keys():
                     stock_dic[stockcode]= (0, 0, 0, 0 ,0)
