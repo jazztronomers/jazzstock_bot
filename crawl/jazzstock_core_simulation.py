@@ -122,10 +122,19 @@ def index_to_date(idx):
 if __name__=='__main__':
 
     if len(sys.argv)==4:
-        print(' * FROM COMMAND LINE')
-        sl= [sys.argv[1]]
-        d_from = int(sys.argv[2])
-        t_list = [cf.COND_TEST1, cf.COND_TEST2, cf.COND_TEST3][int(sys.argv[3])]
+        stocklist = [sys.argv[1]]
+        day_from = int(sys.argv[2])
+        day_end = 0
+        condition_label = int(sys.argv[3])
+
+        condition_dic_full = {'A': cf.COND_TEST1,
+                    'B': cf.COND_TEST2,
+                    'C': cf.COND_TEST3,
+                    'P': cf.COND_PROD}
+
+        condition_dic_selected = condition_dic_full[condition_label]
+
+        print(' * FROM COMMAND LINE, STOCKCODE: %s, FROM DAY_IDX: %s, CONDITION: %s' %(stocklist[0], day_from, condition_dic_selected.keys()[0]))
     else:
         print(' * FROM PYCHARM')
         query = '''
