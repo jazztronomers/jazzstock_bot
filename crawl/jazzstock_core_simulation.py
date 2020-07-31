@@ -167,9 +167,10 @@ if __name__=='__main__':
         LIMIT 10
         '''
         # sl = db.selectSingleColumn(query)
-        sl = ['100130']
-        d_from = 20
-        tlist=[cf.COND_TEST1, cf.COND_PROD]
+        stocklist = ['093320']
+        day_from = 300
+        day_end = 0
+        condition_dic_selected=cf.COND_PROD
 
 
 
@@ -180,6 +181,12 @@ if __name__=='__main__':
         stock_dic = {}
         print('* -----------------------------------------------')
         for stockcode in stocklist:
+
+            PURCHASED_HIGH = 0 # 가장 많이 샀을때
+            LOSS_HIGH = 0      # 평가금액 기준 가장 많이 잃었을때
+
+
+
             for each_idx in range(day_from, day_end-1, -1):
                 the_date = index_to_date(each_idx)
                 if stockcode not in stock_dic.keys():
@@ -197,7 +204,7 @@ if __name__=='__main__':
                     temp[4] = temp[4] + selled
                     stock_dic[stockcode] = tuple(temp)
 
-                    PURCHASE_HOLD, AMOUNT_HOLD, PROFIT, _, _ = stock_dic[stockcode]
+                    PURCHASED_HOLD, AMOUNT_HOLD, PROFIT, _, _ = stock_dic[stockcode]
                     AVERAGE_HOLD, PURCHASED_CUM, SELL_CUM = summary(stock_dic[stockcode])
 
                     if AVERAGE_HOLD != 0:
@@ -205,21 +212,31 @@ if __name__=='__main__':
                     else:
                         PROFIT_RATIO = 0
 
-                    print('* DAILY_%s, %s, %s, %s, %s, %s, %s' % (list(condition_buy.keys())[0],
+                    PURCHASED_HIGH = max(PURCHASED_HIGH, PURCHASED_HOLD)
+                    LOSS_HIGH = min(AMOUNT_HOLD * close_day - PURCHASED_HOLD, LOSS_HIGH)
+
+                    print('* DAILY_%s, %s, %s, %s\t%s\t%s\t%s\t%s\t%s' % (list(condition_buy.keys())[0],
                                                                      stockcode,
                                                                      the_date,
-                                                                     PURCHASE_HOLD,  # 보유금액
-                                                                     AMOUNT_HOLD * close_day,  # 평가금액
-                                                                     AMOUNT_HOLD * close_day - PURCHASE_HOLD,  # 기대수익
-                                                                     PROFIT))  # 누적수익)
+                                                                     PURCHASED_HOLD,                            # 보유금액
+                                                                     AMOUNT_HOLD * close_day,                  # 평가금액
+                                                                     AMOUNT_HOLD * close_day - PURCHASED_HOLD,  # 기대수익
+                                                                     PROFIT,
+                                                                     PURCHASED_HIGH,
+                                                                     LOSS_HIGH))
+
+
+
+
+
                 except Exception as e:
                     print('* ERROR %s, %s '%(e, stockcode))
-            # print('* SM_WHOLE_%s, %s, %s, %s // %s, %.1f%%, %s, %s // %s, %s, %s'%(list(condition_dict.keys())[0], stockcode, the_date, close_day, AV, PROFIT_RATIO, AH, PH, HP, HS, PR))
-            # print('* SM_WHOLE_%s, %s, %s, %s // %s, %.1f%%, %s, %s, %s // %s, %s, %s' % (list(condition_dict.keys())[0], stockcode, the_date, close_day, AV, PROFIT_RATIO, AH, PH, AH * close_day, HP, HS, PR))
-            print('* WHOLE_%s, %s, %s, %s, %s, %s, %s' % (list(condition_buy.keys())[0],
-                                                         stockcode,
-                                                         the_date,
-                                                         PURCHASE_HOLD,             # 보유금액
-                                                         AMOUNT_HOLD * close_day,   # 평가금액
-                                                         AMOUNT_HOLD * close_day - PURCHASE_HOLD, # 기대수익
-                                                         PROFIT))                    # 누적수익)
+            print('* WHOLE_%s, %s, %s, %s\t%s\t%s\t%s\t%s\t%s' % (list(condition_buy.keys())[0],
+                                                                     stockcode,
+                                                                     the_date,
+                                                                     PURCHASED_HOLD,                            # 보유금액
+                                                                     AMOUNT_HOLD * close_day,                  # 평가금액
+                                                                     AMOUNT_HOLD * close_day - PURCHASED_HOLD,  # 기대수익
+                                                                     PROFIT,
+                                                                     PURCHASED_HIGH,
+                                                                     LOSS_HIGH))
