@@ -3,6 +3,7 @@ import common.connector_db as db
 import util.index_calculator as ic
 import pandas as pd
 import config.condition as cf
+import argparse
 from datetime import datetime
 from crawl.jazzstock_object_account import JazzstockObject_Account
 
@@ -121,122 +122,142 @@ def index_to_date(idx):
 
 if __name__=='__main__':
 
-    if len(sys.argv)==4:
-        stocklist = [sys.argv[1]]
-        day_from = int(sys.argv[2])
-        day_end = 0
-        condition_label = sys.argv[3]
 
-        condition_dic_full = {'A': cf.COND_TEST1,
-                    'B': cf.COND_TEST2,
-                    'C': cf.COND_TEST3,
-                    'P': cf.COND_PROD}
+    ## argparse는 귀찮다..
 
-        condition_dic_selected = condition_dic_full[condition_label]
+    if len(sys.argv)==2 and sys.argv[1]=='-h':
 
-        print(' * FROM COMMAND LINE, STOCKCODE: %s, FROM DAY_IDX: %s, CONDITION: %s' %(stocklist[0], day_from, list(condition_dic_selected.keys())[0]))
+        print('''
+        
+        stockcode=$1
+        day_from = $2
+        condition_label= $3
+        
+        
+        output:
+        --------------------------
+        RULE_NAME / STOCKCODE / DATE / CLOSE / 평단 / 평가손익 / 누적매수금액최대치 / 평가손익최저치
+        
+        ''')
+
     else:
-        print(' * FROM PYCHARM')
-        query = '''
-        SELECT STOCKCODE
-        FROM
-        (
-            SELECT STOCKCODE, 
-                    CASE WHEN RN <= 120 THEN "A"
-                         WHEN RN <= 240 THEN "B"
-                         WHEN RN <= 360 THEN "C"
-                         WHEN RN <= 480 THEN "D"
-                         WHEN RN <= 600 THEN "E"
-                         WHEN RN <= 720 THEN "F"
-                         WHEN RN <= 840 THEN "G"
-                         ELSE "H" END AS GRP
+
+        if len(sys.argv)==4:
+            stocklist = [sys.argv[1]]
+            day_from = int(sys.argv[2])
+            day_end = 0
+            condition_label = sys.argv[3]
+
+            condition_dic_full = {'A': cf.COND_TEST1,
+                                    'B': cf.COND_TEST2,
+                                    'C': cf.COND_TEST3,
+                                    'P': cf.COND_PROD}
+
+            condition_dic_selected = condition_dic_full[condition_label]
+
+            print(' * FROM COMMAND LINE, STOCKCODE: %s, FROM DAY_IDX: %s, CONDITION: %s' %(stocklist[0], day_from, list(condition_dic_selected.keys())[0]))
+        else:
+            print(' * FROM PYCHARM')
+            query = '''
+            SELECT STOCKCODE
             FROM
             (
                 SELECT STOCKCODE, 
-                    ROW_NUMBER() OVER (PARTITION BY DATE ORDER BY I5+F5 DESC) AS RN
-                FROM jazzdb.T_STOCK_SND_ANALYSIS_RESULT_TEMP
-                JOIN jazzdb.T_DATE_INDEXED USING (DATE)
-                JOIN jazzdb.T_STOCK_MC USING (STOCKCODE, DATE)
-                WHERE 1=1
-                AND CNT = 0
-                AND MC > 1          # 1300종목
-            ) A
-        ) B        
-        WHERE 1=1
-        AND GRP IN ('A')
-        LIMIT 10
-        '''
-        # sl = db.selectSingleColumn(query)
-        stocklist = ['093320']
-        day_from = 300
-        day_end = 0
-        condition_dic_selected=cf.COND_PROD
+                        CASE WHEN RN <= 120 THEN "A"
+                             WHEN RN <= 240 THEN "B"
+                             WHEN RN <= 360 THEN "C"
+                             WHEN RN <= 480 THEN "D"
+                             WHEN RN <= 600 THEN "E"
+                             WHEN RN <= 720 THEN "F"
+                             WHEN RN <= 840 THEN "G"
+                             ELSE "H" END AS GRP
+                FROM
+                (
+                    SELECT STOCKCODE, 
+                        ROW_NUMBER() OVER (PARTITION BY DATE ORDER BY I5+F5 DESC) AS RN
+                    FROM jazzdb.T_STOCK_SND_ANALYSIS_RESULT_TEMP
+                    JOIN jazzdb.T_DATE_INDEXED USING (DATE)
+                    JOIN jazzdb.T_STOCK_MC USING (STOCKCODE, DATE)
+                    WHERE 1=1
+                    AND CNT = 0
+                    AND MC > 1          # 1300종목
+                ) A
+            ) B        
+            WHERE 1=1
+            AND GRP IN ('A')
+            LIMIT 10
+            '''
+            # sl = db.selectSingleColumn(query)
+            stocklist = ['093320']
+            day_from = 300
+            day_end = 0
+            condition_dic_selected=cf.COND_PROD
 
 
 
 
-    for j, cond in enumerate(stocklist):
-        condition_buy = condition_dic_selected
-        condition_sell = cf.COND_SELL
-        stock_dic = {}
-        print('* -----------------------------------------------')
-        for stockcode in stocklist:
+        for j, cond in enumerate(stocklist):
+            condition_buy = condition_dic_selected
+            condition_sell = cf.COND_SELL
+            stock_dic = {}
+            print('* -----------------------------------------------')
+            for stockcode in stocklist:
 
-            PURCHASED_HIGH = 0 # 가장 많이 샀을때
-            LOSS_HIGH = 0      # 평가금액 기준 가장 많이 잃었을때
-
-
-
-            for each_idx in range(day_from, day_end-1, -1):
-                the_date = index_to_date(each_idx)
-                if stockcode not in stock_dic.keys():
-                    stock_dic[stockcode]= (0, 0, 0, 0 ,0)
-                t = JazzstockCoreSimulationCustom(stockcode, condition_buy, condition_sell, the_date=the_date, the_date_index=each_idx, purchased=stock_dic[stockcode][0], amount=stock_dic[stockcode][1])
-                try:
-
-                    # print(' * START %s / %s ' %(stockcode, the_date))
-                    hold_purchased, amount, profit, purchased, selled, close_day, = t.simulate()
-                    temp = list(stock_dic[stockcode])
-                    temp[0] = int(hold_purchased)
-                    temp[1] = int(amount)
-                    temp[2] = temp[2] + int(profit)
-                    temp[3] = temp[3] + purchased
-                    temp[4] = temp[4] + selled
-                    stock_dic[stockcode] = tuple(temp)
-
-                    PURCHASED_HOLD, AMOUNT_HOLD, PROFIT, _, _ = stock_dic[stockcode]
-                    AVERAGE_HOLD, PURCHASED_CUM, SELL_CUM = summary(stock_dic[stockcode])
-
-                    if AVERAGE_HOLD != 0:
-                        PROFIT_RATIO = round(( close_day - AVERAGE_HOLD ) / close_day,3)*100
-                    else:
-                        PROFIT_RATIO = 0
-
-                    PURCHASED_HIGH = max(PURCHASED_HIGH, PURCHASED_HOLD)
-                    LOSS_HIGH = min(AMOUNT_HOLD * close_day - PURCHASED_HOLD, LOSS_HIGH)
-
-                    print('* DAILY_%s, %s, %s, %s\t%s\t%s\t%s\t%s\t%s' % (list(condition_buy.keys())[0],
-                                                                     stockcode,
-                                                                     the_date,
-                                                                     PURCHASED_HOLD,                            # 보유금액
-                                                                     AMOUNT_HOLD * close_day,                  # 평가금액
-                                                                     AMOUNT_HOLD * close_day - PURCHASED_HOLD,  # 기대수익
-                                                                     PROFIT,
-                                                                     PURCHASED_HIGH,
-                                                                     LOSS_HIGH))
+                PURCHASED_HIGH = 0 # 가장 많이 샀을때
+                LOSS_HIGH = 0      # 평가금액 기준 가장 많이 잃었을때
 
 
 
+                for each_idx in range(day_from, day_end-1, -1):
+                    the_date = index_to_date(each_idx)
+                    if stockcode not in stock_dic.keys():
+                        stock_dic[stockcode]= (0, 0, 0, 0 ,0)
+                    t = JazzstockCoreSimulationCustom(stockcode, condition_buy, condition_sell, the_date=the_date, the_date_index=each_idx, purchased=stock_dic[stockcode][0], amount=stock_dic[stockcode][1])
+                    try:
+
+                        # print(' * START %s / %s ' %(stockcode, the_date))
+                        hold_purchased, amount, profit, purchased, selled, close_day, = t.simulate()
+                        temp = list(stock_dic[stockcode])
+                        temp[0] = int(hold_purchased)
+                        temp[1] = int(amount)
+                        temp[2] = temp[2] + int(profit)
+                        temp[3] = temp[3] + purchased
+                        temp[4] = temp[4] + selled
+                        stock_dic[stockcode] = tuple(temp)
+
+                        PURCHASED_HOLD, AMOUNT_HOLD, PROFIT, _, _ = stock_dic[stockcode]
+                        AVERAGE_HOLD, PURCHASED_CUM, SELL_CUM = summary(stock_dic[stockcode])
+
+                        if AVERAGE_HOLD != 0:
+                            PROFIT_RATIO = round(( close_day - AVERAGE_HOLD ) / close_day,3)*100
+                        else:
+                            PROFIT_RATIO = 0
+
+                        PURCHASED_HIGH = max(PURCHASED_HIGH, PURCHASED_HOLD)
+                        LOSS_HIGH = min(AMOUNT_HOLD * close_day - PURCHASED_HOLD, LOSS_HIGH)
+
+                        print('* DAILY_%s, %s, %s, %s\t%s\t%s\t%s\t%s\t%s' % (list(condition_buy.keys())[0],
+                                                                         stockcode,
+                                                                         the_date,
+                                                                         PURCHASED_HOLD,                            # 보유금액
+                                                                         AMOUNT_HOLD * close_day,                  # 평가금액
+                                                                         AMOUNT_HOLD * close_day - PURCHASED_HOLD,  # 기대수익
+                                                                         PROFIT,
+                                                                         PURCHASED_HIGH,
+                                                                         LOSS_HIGH))
 
 
-                except Exception as e:
-                    print('* ERROR %s, %s '%(e, stockcode))
-            print('* WHOLE_%s, %s, %s, %s\t%s\t%s\t%s\t%s\t%s' % (list(condition_buy.keys())[0],
-                                                                     stockcode,
-                                                                     the_date,
-                                                                     PURCHASED_HOLD,                            # 보유금액
-                                                                     AMOUNT_HOLD * close_day,                  # 평가금액
-                                                                     AMOUNT_HOLD * close_day - PURCHASED_HOLD,  # 기대수익
-                                                                     PROFIT,
-                                                                     PURCHASED_HIGH,
-                                                                     LOSS_HIGH))
+
+
+
+                    except Exception as e:
+                        print('* ERROR %s, %s '%(e, stockcode))
+                print('* WHOLE_%s, %s, %s, %s\t%s\t%s\t%s\t%s\t%s' % (list(condition_buy.keys())[0],
+                                                                         stockcode,
+                                                                         the_date,
+                                                                         PURCHASED_HOLD,                            # 보유금액
+                                                                         AMOUNT_HOLD * close_day,                  # 평가금액
+                                                                         AMOUNT_HOLD * close_day - PURCHASED_HOLD,  # 기대수익
+                                                                         PROFIT,
+                                                                         PURCHASED_HIGH,
+                                                                         LOSS_HIGH))

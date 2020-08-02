@@ -15,6 +15,7 @@ else:
 
 
 print(" * CONDITION INITIALIZED, instance_id: %s" %(INSTANCE_ID))
+
 COND_PROD = {
 
 
@@ -27,6 +28,75 @@ COND_PROD = {
 
 }
 
+
+COND_TEMPLATE = {
+
+
+    '%s_거래량동반돌파'%(INSTANCE_ID): {
+                    'PSMAR60': ['BIGGER',0.01],
+                    'VSMAR20': ['BIGGER', 0.5],
+                    'TRADINGVALUE': ['BIGGER',1]
+    },
+
+
+}
+
+
+
+def condition_generator_bigger(cond_dict):
+    # BIGGER 만 됨...
+
+    '''
+
+    컬럼을 몇개만 넣으면 적정값을 찾아주는 험수
+
+    input:
+
+    '%s_거래량동반돌파'%(INSTANCE_ID): {
+                    'PSMAR60': ['BIGGER',0.01],
+                    'VSMAR20': ['BIGGER', 0.5],
+                    'TRADINGVALUE': ['BIGGER',1]
+    },
+
+
+    ouput:
+
+    [
+        '%s_거래량동반돌파'%(INSTANCE_ID): {
+                    'PSMAR60': ['BIGGER',0.01],
+                    'VSMAR20': ['BIGGER', 0.5],
+                    'TRADINGVALUE': ['BIGGER',1]
+        },
+
+        '%s_거래량동반돌파'%(INSTANCE_ID): {
+                    'PSMAR60': ['BIGGER',0.02],
+                    'VSMAR20': ['BIGGER', 0.5],
+                    'TRADINGVALUE': ['BIGGER',1]
+        },
+    ]
+
+    :param cond_dict:
+    :return:
+    '''
+
+
+    cond_name = cond_dict.keys()[0]  # 단일 컨디션만 확장해줌
+    cond_key = cond_dict.values()[0].keys()
+
+    for i in range (0,20):
+        pass
+
+
+
+
+
+
+
+
+
+
+
+
 COND_TEST1 = {
     '%s_BUY01' % (INSTANCE_ID): {
         'PSMAR60': ['BIGGER', 0.015],
@@ -38,30 +108,3 @@ COND_TEST1 = {
 
 
 
-COND_SELL = {
-
-    '%s_SELL01' % (INSTANCE_ID): {
-        'PSMAR5': ['BIGGER', 0.005],
-    },
-
-}
-
-
-COND_TEST2 = {
-    '%s_TEST02' % (INSTANCE_ID): {
-        'PSMAR5': ['BIGGER', 0.015],
-        'VSMAR5': ['BIGGER', 3],
-        'VSMAR20': ['BIGGER', 5],
-        'TRADINGVALUE': ['BIGGER', 2]
-    },
-}
-
-COND_TEST3 = {
-    '%s_TEST03' % (INSTANCE_ID): {
-        'PSMAR5': ['BIGGER', 0.015],
-        'VSMAR5': ['BIGGER', 3],
-        'VSMAR20': ['BIGGER', 5],
-        'VSMAR60': ['BIGGER', 3],
-        'TRADINGVALUE': ['BIGGER', 2]
-    },
-}
