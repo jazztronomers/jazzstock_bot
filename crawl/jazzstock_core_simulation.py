@@ -23,7 +23,7 @@ pd.options.display.max_columns= 500
 
 
 class JazzstockCoreSimulation:
-    def __init__(self, stockcode, condition_buy, condition_sell, the_date, the_date_index, purchased=0, amount=0):
+    def __init__(self, stockcode, condition_buy, the_date, the_date_index, purchased=0, amount=0):
         '''
 
         :param stockcode:
@@ -43,7 +43,6 @@ class JazzstockCoreSimulation:
         self.COLUMNS_MIN = ['DATE', 'TIME', 'CLOSE', 'VSMAR20', 'BBP', 'BBW', 'K', 'D', 'J']
 
         self.condition_buy  = condition_buy
-        self.condition_sell = condition_sell
 
         # DEBUGGING ================================================
         # print(self.obj.df_ohlc_day.tail(2))
@@ -66,8 +65,8 @@ class JazzstockCoreSimulation:
         '''
 
 class JazzstockCoreSimulationCustom(JazzstockCoreSimulation):
-    def __init__(self, stockcode, condition_buy, condition_sell, the_date, the_date_index, purchased, amount):
-        super().__init__(stockcode, condition_buy, condition_sell, the_date, the_date_index, purchased, amount)
+    def __init__(self, stockcode, condition_buy, the_date, the_date_index, purchased, amount):
+        super().__init__(stockcode, condition_buy, the_date, the_date_index, purchased, amount)
 
 
     def simulate(self, log_level=5):
@@ -149,8 +148,6 @@ if __name__=='__main__':
             condition_label = sys.argv[3]
 
             condition_dic_full = {'A': cf.COND_TEST1,
-                                    'B': cf.COND_TEST2,
-                                    'C': cf.COND_TEST3,
                                     'P': cf.COND_PROD}
 
             condition_dic_selected = condition_dic_full[condition_label]
@@ -198,7 +195,6 @@ if __name__=='__main__':
 
         for j, cond in enumerate(stocklist):
             condition_buy = condition_dic_selected
-            condition_sell = cf.COND_SELL
             stock_dic = {}
             print('* -----------------------------------------------')
             for stockcode in stocklist:
@@ -212,7 +208,7 @@ if __name__=='__main__':
                     the_date = index_to_date(each_idx)
                     if stockcode not in stock_dic.keys():
                         stock_dic[stockcode]= (0, 0, 0, 0 ,0)
-                    t = JazzstockCoreSimulationCustom(stockcode, condition_buy, condition_sell, the_date=the_date, the_date_index=each_idx, purchased=stock_dic[stockcode][0], amount=stock_dic[stockcode][1])
+                    t = JazzstockCoreSimulationCustom(stockcode, condition_buy, the_date=the_date, the_date_index=each_idx, purchased=stock_dic[stockcode][0], amount=stock_dic[stockcode][1])
                     try:
 
                         # print(' * START %s / %s ' %(stockcode, the_date))

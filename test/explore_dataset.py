@@ -9,6 +9,16 @@ import config.condition as cf
 pd.options.display.max_rows = 1000
 pd.options.display.max_columns= 500
 
+'''
+
+특정종목, 거래일의 5분봉 테이블을 지표까지 붙여서 출력하는 함수
+EYE CHECKING용
+
+
+'''
+
+
+
 def date_to_index(date):
     cnt = db.selectSingleValue("SELECT CNT FROM jazzdb.T_DATE_INDEXED WHERE 1=1 AND DATE = '%s'"%(date))
     return cnt
