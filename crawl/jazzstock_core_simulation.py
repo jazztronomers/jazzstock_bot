@@ -148,7 +148,18 @@ if __name__=='__main__':
             condition_label = sys.argv[3]
 
             condition_dic_full = {'A': cf.COND_TEST1,
-                                    'P': cf.COND_PROD}
+                                  'B': cf.COND_TEST2,
+                                  'C': cf.COND_TEST3,
+                                  'D': cf.COND_TEST4,
+                                  'E': cf.COND_TEST5,
+                                  'F': cf.COND_TEST6,
+                                  'G': cf.COND_TEST7,
+                                  'H': cf.COND_TEST8,
+                                  'I': cf.COND_TEST9,
+                                  'J': cf.COND_TEST10,
+                                  'K': cf.COND_TEST11,
+                                  'L': cf.COND_TEST12,
+                                  'P': cf.COND_PROD}
 
             condition_dic_selected = condition_dic_full[condition_label]
 
@@ -186,7 +197,7 @@ if __name__=='__main__':
             '''
             # sl = db.selectSingleColumn(query)
             stocklist = ['093320']
-            day_from = 300
+            day_from = 30
             day_end = 0
             condition_dic_selected=cf.COND_PROD
 
@@ -248,12 +259,15 @@ if __name__=='__main__':
 
                     except Exception as e:
                         print('* ERROR %s, %s '%(e, stockcode))
-                print('* WHOLE_%s, %s, %s, %s\t%s\t%s\t%s\t%s\t%s' % (list(condition_buy.keys())[0],
+                print('* WHOLE_%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%.3f\t%s\t%s' % (list(condition_buy.keys())[0],
                                                                          stockcode,
                                                                          the_date,
                                                                          PURCHASED_HOLD,                            # 보유금액
-                                                                         AMOUNT_HOLD * close_day,                  # 평가금액
+                                                                         AMOUNT_HOLD * close_day,                   # 평가금액
                                                                          AMOUNT_HOLD * close_day - PURCHASED_HOLD,  # 기대수익
                                                                          PROFIT,
+                                                                         PURCHASED_CUM,
+                                                                         SELL_CUM,
+                                                                         PROFIT/PURCHASED_CUM*100,
                                                                          PURCHASED_HIGH,
                                                                          LOSS_HIGH))
