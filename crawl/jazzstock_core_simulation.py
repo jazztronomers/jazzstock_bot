@@ -268,6 +268,6 @@ if __name__=='__main__':
                                                                          PROFIT,
                                                                          PURCHASED_CUM,
                                                                          SELL_CUM,
-                                                                         PROFIT/PURCHASED_CUM*100,
+                                                                         0 if PURCHASED_CUM == 0 else PROFIT/PURCHASED_CUM*100,
                                                                          PURCHASED_HIGH,
                                                                          LOSS_HIGH))

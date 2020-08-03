@@ -1,11 +1,11 @@
 import common.connector_db as db
-
+import sys
 
 '''
 BASH SCRIPT 로 LIST 를 넘겨야 할때 사용할 스크립트
 '''
 
-
+COUNT = sys.argv[1]
 
 
 query = '''
@@ -34,12 +34,10 @@ FROM
     ) A
 ) B        
 WHERE 1=1
-AND GRP IN ('A')
-LIMIT 120
-'''
+AND GRP IN ('G')
+LIMIT %s
+'''%(COUNT)
+
 sl = db.selectSingleColumn(query)
-
-
 rt = ' '.join(sl)
-
 print(rt)
