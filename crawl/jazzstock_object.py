@@ -461,6 +461,8 @@ class JazzstockObject:
         :param value:
         :return:
         '''
+        
+
 
         if (operate == 'SMALLER'):
             return df[col] < args[0]

@@ -198,3 +198,83 @@ COND_TEST12 = {
 }
 
 
+COND_TEST_PRH1 = {
+        '%s01'%(INSTANCE_ID): {
+                                'PSMAR20': ['BIGGER',0.02],
+                                'VSMAR60': ['BIGGER', 10],
+                                'TRADINGVALUE': ['BIGGER',1]
+                                                                            },
+
+
+}
+
+COND_TEST_PRH2 = {
+        '%s01'%(INSTANCE_ID): {
+                                'PSMAR20': ['BIGGER',0.02],
+                                'VSMAR60': ['BIGGER', 11],
+                                'TRADINGVALUE': ['BIGGER',1]
+                                                                            },
+
+
+}
+COND_TEST_PRH3 = {
+        '%s01'%(INSTANCE_ID): {
+                                'PSMAR20': ['BIGGER',0.02],
+                                'VSMAR60': ['BIGGER', 12],
+                                'TRADINGVALUE': ['BIGGER',1]
+                                                                            },
+
+
+}
+COND_TEST_PRH4 = {
+        '%s01'%(INSTANCE_ID): {
+                                'PSMAR20': ['BIGGER',0.02],
+                                'VSMAR60': ['BIGGER', 13],
+                                'TRADINGVALUE': ['BIGGER',1]
+                                                                            },
+
+
+}
+
+COND_TEST_PRH5 = {
+        '%s01'%(INSTANCE_ID): {
+                                'PSMAR20': ['BIGGER',0.02],
+                                'VSMAR60': ['BIGGER', 14],
+                                'TRADINGVALUE': ['BIGGER',1]
+                                                                            },
+
+
+}
+
+
+COND_TEST_PRH6 = {
+    '%sB01'%(INSTANCE_ID): {
+                    'PSMAR60': ['BIGGER',0.02],
+                    'VSMAR20': ['BIGGER', 10],
+                    'VSMAR5': ['BIGGER', 1],
+                    'TRADINGVALUE': ['BIGGER',1]
+    },
+}
+
+COND_TEST_PRH7 = {
+    '%sB01'%(INSTANCE_ID): {
+                    'PSMAR60': ['BIGGER',0.02],
+                    'VSMAR20': ['BIGGER', 10],
+                    'VSMAR5':['BIGGER', 1.5],
+                    'TRADINGVALUE': ['BIGGER',1]
+    },
+}
+
+
+
+COND_TEST_PRH9 = {
+        '%s01'%(INSTANCE_ID): {
+                                'PSMAR20': ['BIGGER',0.02],
+                                'VSMAR60': ['BIGGER', 10],
+                                'CLOSE': ['SMALLER_P', 0.08],
+                                'TRADINGVALUE': ['BIGGER',1]
+                                                                            },
+
+
+}
+
