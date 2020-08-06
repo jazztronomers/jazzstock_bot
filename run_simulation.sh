@@ -8,7 +8,7 @@ STOCKCODE=`python3 /workspace/jazzstock_bot/test/get_stockcode_for_simulation.py
 
 
 
-for CONDITION_LABEL in TA TB TC TD TE TF TG; do
+for CONDITION_LABEL in TP TA TB TC ; do
 	mkdir -p /workspace/jazzstock_bot/log/simulation/$CONDITION_LABEL
 	for EACHCODE in $STOCKCODE; do
 		while [ $(pgrep python3 | wc -l) -gt $PARALLEL ]
