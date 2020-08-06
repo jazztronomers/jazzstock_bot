@@ -146,10 +146,10 @@ if __name__=='__main__':
             day_from = int(sys.argv[2])
             day_end = 0
             condition_label = sys.argv[3]
-            condition_dic_full = {'TA': cf.COND_PROD,
-                                  'TB': cf.COND_TEST_A,
-                                  'TC': cf.COND_TEST_B,
-                                  'TD': cf.COND_TEST_C,}
+            condition_dic_full = {'TP': cf.COND_PROD,
+                                  'TA': cf.COND_TEST_A,
+                                  'TB': cf.COND_TEST_B,
+                                  'TC': cf.COND_TEST_C,}
 
             condition_dic_selected = condition_dic_full[condition_label]
 
