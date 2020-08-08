@@ -233,13 +233,16 @@ if __name__=='__main__':
                         PURCHASED_HIGH = max(PURCHASED_HIGH, PURCHASED_HOLD)
                         LOSS_HIGH = min(AMOUNT_HOLD * close_day - PURCHASED_HOLD, LOSS_HIGH)
 
-                        print('* DAILY_%s, %s, %s, %s\t%s\t%s\t%s\t%s\t%s' % (list(condition_buy.keys())[0],
+                        print('* DAILY_%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%.3f\t%s\t%s' % (list(condition_buy.keys())[0],
                                                                          stockcode,
                                                                          the_date,
                                                                          PURCHASED_HOLD,                            # 보유금액
-                                                                         AMOUNT_HOLD * close_day,                  # 평가금액
+                                                                         AMOUNT_HOLD * close_day,                   # 평가금액
                                                                          AMOUNT_HOLD * close_day - PURCHASED_HOLD,  # 기대수익
                                                                          PROFIT,
+                                                                         PURCHASED_CUM,
+                                                                         SELL_CUM,
+                                                                         0 if PURCHASED_CUM == 0 else PROFIT/PURCHASED_CUM*100,
                                                                          PURCHASED_HIGH,
                                                                          LOSS_HIGH))
 
