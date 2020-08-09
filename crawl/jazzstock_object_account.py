@@ -102,7 +102,7 @@ class JazzstockObject_Account(JazzstockObject):
 
     def shouldsell(self, row):
 
-        if int(row.CLOSE) > int((self.purchased / self.amount) * 1.04):
+        if int(row.CLOSE) > int((self.purchased / self.amount) * 1.12):
 
             if self.purchased > 500000:
                 return self.amount

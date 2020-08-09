@@ -40,3 +40,7 @@ print(df['PROFIT_REALIZED'].sum()/df['CUM_PURCHASED'].sum())
 
 print('\n')
 df.to_csv('summary_%s.log'%(PATH_LABEL))
+
+
+
+
