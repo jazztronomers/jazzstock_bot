@@ -6,7 +6,7 @@ BASH SCRIPT 로 LIST 를 넘겨야 할때 사용할 스크립트
 '''
 
 COUNT = sys.argv[1]
-
+GROUP = sys.argv[2]
 
 query = '''
 SELECT STOCKCODE
@@ -34,9 +34,9 @@ FROM
     ) A
 ) B        
 WHERE 1=1
-AND GRP IN ('G')
+AND GRP IN ('%s')
 LIMIT %s
-'''%(COUNT)
+'''%(GROUP, COUNT)
 
 sl = db.selectSingleColumn(query)
 rt = ' '.join(sl)
