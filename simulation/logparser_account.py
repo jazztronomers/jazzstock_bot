@@ -5,7 +5,7 @@ import pandas as pd
 
 PATH_ROOT= '/workspace/jazzstock_bot/simulation'
 PATH_LABEL= sys.argv[1] if len(sys.argv) > 1 else 'TA'
-PATH_SUBDIR = 'result_%s'%(sys.argv[2]) if len(sys.argv) > 2 else 'result_template'
+PATH_SUBDIR = 'result_%s'%(sys.argv[2]) if len(sys.argv) > 2 else 'template_result'
 
 PATH_LOG = os.path.join(PATH_ROOT, PATH_SUBDIR, PATH_LABEL)
 
