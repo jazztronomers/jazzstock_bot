@@ -7,7 +7,7 @@ GROUP=$4
 
 STOCKCODE=`python3 /workspace/jazzstock_bot/test/get_stockcode_for_simulation.py $STOCKCOUNT $GROUP`
 NOW=$(date +%s)
-PATH_OUTPUT="/workspace/jazzstock_bot/log/simulation_$NOW"
+PATH_OUTPUT="/workspace/jazzstock_bot/simulation/result_$NOW"
 
 
 
@@ -24,7 +24,7 @@ for CONDITION_LABEL in TA TB TC TP ; do
 	done
 
 
-	python3 /workspace/jazzstock_bot/log/logparser_account.py $CONDITION_LABEL $NOW
+	python3 /workspace/jazzstock_bot/simulation/logparser_account.py $CONDITION_LABEL $NOW
 done
 
 
