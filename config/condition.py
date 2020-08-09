@@ -71,10 +71,36 @@ COND_TEST_B= {
 COND_TEST_C= {
     'TEST_DEBUG': {
         'VSMAR5': ['BIGGER', 1],
+        'VSMAR20': ['BIGGER', 5],
+        'VSMAR60': ['BIGGER', 5],
+        'PSMAR60': ['BIGGER', 0.015],
+        'VOLUME': ['BIGGER', '20D_85QTILE_VOL'],
+        'CLOSE': ['SMALLER_P', '05D_HIGH', 0.1],
+        'TRADINGVALUE': ['BIGGER', 1]
+    },
+}
+
+
+COND_TEST_D= {
+    'TEST_DEBUG': {
+        'VSMAR5': ['BIGGER', 1],
         'VSMAR20': ['BIGGER', 1.5],
         'VSMAR60': ['BIGGER', 3],
         'PSMAR60': ['BIGGER', 0.015],
         'VOLUME': ['BIGGER', '20D_85QTILE_VOL'],
+        'CLOSE': ['SMALLER_P', '05D_HIGH', 0.1],
+        'TRADINGVALUE': ['BIGGER', 1]
+    },
+}
+
+COND_TEST_E= {
+    'TEST_DEBUG': {
+        'VSMAR5': ['BIGGER', 1],
+        'VSMAR20': ['BIGGER', 1.5],
+        'VSMAR60': ['BIGGER', 3],
+        'PSMAR60': ['BIGGER', 0.015],
+        'VOLUME': ['BIGGER', '20D_85QTILE_VOL'],
+        'CLOSE': ['SMALLER_P', '05D_HIGH', 0.15],
         'TRADINGVALUE': ['BIGGER', 1]
     },
 }

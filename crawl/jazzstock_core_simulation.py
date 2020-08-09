@@ -149,7 +149,9 @@ if __name__=='__main__':
             condition_dic_full = {'TP': cf.COND_PROD,
                                   'TA': cf.COND_TEST_A,
                                   'TB': cf.COND_TEST_B,
-                                  'TC': cf.COND_TEST_C,}
+                                  'TC': cf.COND_TEST_C,
+                                  'TD': cf.COND_TEST_D,
+                                  'TE': cf.COND_TEST_E}
 
             condition_dic_selected = condition_dic_full[condition_label]
 
