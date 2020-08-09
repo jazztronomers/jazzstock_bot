@@ -2,12 +2,14 @@ import common.connector_db as db
 import sys
 
 '''
-COMMAND LINE에서 ARGV를 받아서 쿼리를 실행하여 반환 받은 결과를
-BASH SCRIPT 로 SPACE SPLITED STRING (LIST) ARGV 넘겨야 할때 사용함
+jazzstock_bot/common/connector_db.py 모듈을 읽어와서
+db에 데이터를 python 자료형 (list, str, dataframe) 으로 반환 받는 간단예제
+
 '''
 
-COUNT = sys.argv[1]
-GROUP = sys.argv[2]
+
+GROUP = 'A'
+COUNT = '50'
 
 query = '''
 SELECT STOCKCODE
@@ -39,8 +41,35 @@ AND GRP IN ('%s')
 LIMIT %s
 '''%(GROUP, COUNT)
 
-sl = db.selectSingleColumn(query)         # SELECT 결과를 리스트로 받음
-rt = ' '.join(sl)
-print(rt)
+
+# SELECT 결과를 리스트로 받음
+# 딱 한컬럼만 받아오는 경우만 사용
+result = db.selectSingleColumn(query)         
+print(result)
+print('-'*100)
+
+
+# SELECT 결과를 PANDAS DATAFRAME으로 받음
+
+STOCKCODE ='079940'
+DATE = '2020-08-06'
+
+query_df = '''
+SELECT STOCKCODE, DATE, TIME, OPEN, HIGH, LOW, CLOSE, VOLUME 
+FROM jazzdb.T_STOCK_OHLC_MIN
+WHERE 1=1
+AND STOCKCODE = '%s'
+AND DATE = '%s'
+
+'''%(STOCKCODE, DATE)
+
+df = db.selectpd(query_df)
+
+
+
+print(df.tail(10))
+
+# DATAFRAME을 EXECL 파일로 저장
+df.to_csv('./test/%s_%s.csv'%(STOCKCODE,DATE))
 
 
