@@ -21,7 +21,10 @@ FROM
                  WHEN RN <= 600 THEN "E"
                  WHEN RN <= 720 THEN "F"
                  WHEN RN <= 840 THEN "G"
-                 ELSE "H" END AS GRP
+                 WHEN RN <= 960 THEN "H"
+                 WHEN RN <= 1080 THEN "I"
+                 WHEN RN <= 1200 THEN "J"
+                 ELSE "K" END AS GRP
     FROM
     (
         SELECT STOCKCODE, 

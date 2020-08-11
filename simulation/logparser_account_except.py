@@ -5,10 +5,9 @@ import pandas as pd
 
 PATH_ROOT= '/workspace/jazzstock_bot/simulation'
 PATH_LABEL= sys.argv[1] if len(sys.argv) > 1 else 'TA'
-PATH_GROUP= sys.argv[2] if len(sys.argv) > 2 else 'A'
-PATH_SUBDIR = 'result_%s'%(sys.argv[3]) if len(sys.argv) > 3 else 'template_result'
+PATH_SUBDIR = 'result_%s'%(sys.argv[2]) if len(sys.argv) > 2 else 'template_result'
 
-PATH_LOG = os.path.join(PATH_ROOT, PATH_SUBDIR, PATH_GROUP, PATH_LABEL)
+PATH_LOG = os.path.join(PATH_ROOT, PATH_SUBDIR, PATH_LABEL)
 
 
 # ['* WHOLE_T01A01',           '009290', '2020-08-03', '11162', '9110', '-2052', '46812', '820828.0', '867640.0', '5.703', '208880', '-7187']
@@ -37,8 +36,9 @@ for each in COLUMNS_NUMERIC:
 result_df = df.groupby(['DATE']).sum()[['CLOSE', 'AVG', 'PROFIT_REALTIME', 'CUM_PURCHASED', 'PROFIT_REALIZED' ]]
 result_df['PROFIT_HIST']=result_df['PROFIT_REALTIME']+result_df['PROFIT_REALIZED']
 
-date_to, date_from = result_df.index.max(), result_df.index.min()
-date_count = len(result_df.index)
+# MDD = result_df['PROFIT_HIST'].min()
+
+
 
 result_dic = result_df.iloc[-1].to_dict()
 recovery_rate=result_dic['CUM_PURCHASED'] / (result_dic['CLOSE']+result_dic['CUM_PURCHASED'])
@@ -46,7 +46,7 @@ profit_ratio_net= result_dic['PROFIT_HIST'] / (result_dic['CLOSE']+result_dic['C
 profit_ratio_realized= result_dic['PROFIT_REALIZED'] / result_dic['CUM_PURCHASED']
 profit_ratio_expected= result_dic['PROFIT_REALTIME'] / result_dic['CLOSE']
 
-print(PATH_LABEL, '%s ~ %s (%s 거래일)'%(date_from, date_to, date_count))
+print(PATH_LABEL)
 print('-'*60)
 print('회수율_자금: {:+.4f} ( {:>10,.0f} / {:>10,.0f} )'.format(recovery_rate, result_dic['CUM_PURCHASED'], result_dic['CLOSE']+result_dic['CUM_PURCHASED']))
 print('수익률_기대: {:+.4f} ( {:>10,.0f} / {:>10,.0f} )'.format(profit_ratio_expected, result_dic['PROFIT_REALTIME'], result_dic['CLOSE']))

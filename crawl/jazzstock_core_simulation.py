@@ -144,9 +144,9 @@ if __name__=='__main__':
         if len(sys.argv)==4:
             stocklist = [sys.argv[1]]
             day_from = int(sys.argv[2])
-            day_end = 0
+            day_end = int(sys.argv[2])-1
             condition_label = sys.argv[3]
-            condition_dic_full = {'TP': cf.COND_PROD,
+            condition_dic_full = {#'TP': cf.COND_PROD,
                                   'TA': cf.COND_TEST_A,
                                   'TB': cf.COND_TEST_B,
                                   'TC': cf.COND_TEST_C,

@@ -52,43 +52,46 @@ def condition_generator_bigger(cond_dict):
     '''
 
 
-COND_TEST_A = {
-    '%sAAA'%(INSTANCE_ID): {
-                    'PSMAR60': ['BIGGER',0.02],
-                    'VSMAR20': ['BIGGER', 8],
-                    'TRADINGVALUE': ['BIGGER',1]
-    },
-}
-
-COND_TEST_B= {
-    '%sDDD'%(INSTANCE_ID): {
-                    'PSMAR60': ['BIGGER',0.02],
-                    'VSMAR20': ['BIGGER', 5],
-                    'VSMAR5': ['BIGGER', 2.5],
-                    'TRADINGVALUE': ['BIGGER',1]
-    },
-}
 COND_TEST_C= {
     'TEST_DEBUG': {
         'VSMAR5': ['BIGGER', 1],
-        'VSMAR20': ['BIGGER', 5],
-        'VSMAR60': ['BIGGER', 5],
+        'VSMAR20': ['BIGGER', 8],
         'PSMAR60': ['BIGGER', 0.015],
         'VOLUME': ['BIGGER', '20D_85QTILE_VOL'],
-        'CLOSE': ['SMALLER_P', '05D_HIGH', 0.1],
+        'CLOSE': ['SMALLER_P', '05D_HIGH', 0.05],
         'TRADINGVALUE': ['BIGGER', 1]
     },
 }
 
+COND_TEST_A= {
+    'TEST_DEBUG': {
+        'VSMAR5': ['BIGGER', 2],
+        'VSMAR20': ['BIGGER', 8],
+        'PSMAR60': ['BIGGER', 0.015],
+        'VOLUME': ['BIGGER', '20D_85QTILE_VOL'],
+        'CLOSE': ['SMALLER_P', '05D_HIGH', 0.05],
+        'TRADINGVALUE': ['BIGGER', 1]
+    },
+}
+
+COND_TEST_B= {
+    'TEST_DEBUG': {
+        'VSMAR5': ['BIGGER', 1],
+        'VSMAR20': ['BIGGER', 10],
+        'PSMAR60': ['BIGGER', 0.015],
+        'VOLUME': ['BIGGER', '20D_85QTILE_VOL'],
+        'CLOSE': ['SMALLER_P', '05D_HIGH', 0.05],
+        'TRADINGVALUE': ['BIGGER', 1]
+    },
+}
 
 COND_TEST_D= {
     'TEST_DEBUG': {
         'VSMAR5': ['BIGGER', 1],
-        'VSMAR20': ['BIGGER', 1.5],
-        'VSMAR60': ['BIGGER', 3],
-        'PSMAR60': ['BIGGER', 0.015],
+        'VSMAR20': ['BIGGER', 8],
+        'PSMAR60': ['BIGGER', 0.017],
         'VOLUME': ['BIGGER', '20D_85QTILE_VOL'],
-        'CLOSE': ['SMALLER_P', '05D_HIGH', 0.1],
+        'CLOSE': ['SMALLER_P', '05D_HIGH', 0.05],
         'TRADINGVALUE': ['BIGGER', 1]
     },
 }
@@ -96,11 +99,12 @@ COND_TEST_D= {
 COND_TEST_E= {
     'TEST_DEBUG': {
         'VSMAR5': ['BIGGER', 1],
-        'VSMAR20': ['BIGGER', 1.5],
-        'VSMAR60': ['BIGGER', 3],
+        'VSMAR20': ['BIGGER', 8],
         'PSMAR60': ['BIGGER', 0.015],
         'VOLUME': ['BIGGER', '20D_85QTILE_VOL'],
-        'CLOSE': ['SMALLER_P', '05D_HIGH', 0.15],
+        'CLOSE': ['SMALLER_P', '05D_HIGH', 0.06],
         'TRADINGVALUE': ['BIGGER', 1]
     },
 }
+
+
