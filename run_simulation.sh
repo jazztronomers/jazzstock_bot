@@ -15,7 +15,7 @@ for GROUP in A B C D E F G H I;do
 	echo $GROUP
 	echo "========================================================================================"
 
-	for CONDITION_LABEL in TA TB TC TD TE; do
+	for CONDITION_LABEL in TA; do
 		mkdir -p $PATH_OUTPUT/$GROUP/$CONDITION_LABEL
 		for EACHCODE in $STOCKCODE; do
 			while [ $(pgrep python3 | wc -l) -gt $PARALLEL ]
@@ -23,7 +23,7 @@ for GROUP in A B C D E F G H I;do
 				sleep 0.5
 			done 
 			## echo DO.... $CONDITION_LABEL $EACHCODE
-			python3 -u /workspace/jazzstock_bot/crawl/jazzstock_core_simulation.py $EACHCODE $DAYFROM $CONDITION_LABEL > $PATH_OUTPUT/$GROUP/$CONDITION_LABEL/$EACHCODE.log &
+			python3 -u /workspace/jazzstock_bot/crawl/jazzstock_core_simulation.py $EACHCODE $DAYFROM $CONDITION_LABEL $PATH_OUTPUT/$GROUP/$CONDITION_LABEL/account.csv > $PATH_OUTPUT/$GROUP/$CONDITION_LABEL/$EACHCODE.log &
 			sleep 0.5
 		done
 

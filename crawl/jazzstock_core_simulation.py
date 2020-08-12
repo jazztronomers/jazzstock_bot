@@ -3,6 +3,7 @@ import common.connector_db as db
 import util.index_calculator as ic
 import pandas as pd
 import config.condition as cf
+import os
 import argparse
 from datetime import datetime
 from crawl.jazzstock_object_account import JazzstockObject_Account
@@ -118,6 +119,29 @@ def index_to_date(idx):
     thedate = db.selectSingleValue("SELECT DATE FROM jazzdb.T_DATE_INDEXED WHERE 1=1 AND CNT = '%s'"%(idx))
     return thedate
 
+def record(result, path_record):
+
+    if not os.path.isfile(path_record):
+        print('@@@@@@@@ GEN CSV : %s'%(path_record))
+        print('@@@@@@@@ %s'%(result))
+        df = pd.DataFrame(columns=['STOCKCODE','AMOUNT','PURCHASED'])
+        df.loc[len(df)]=result
+        df.to_csv(path_record, index=False)
+    else:
+        print('@@@@@@@@ APPEND CSV : %s'%(path_record))
+        df = pd.read_csv(path_record)
+        
+        print('@@@@@@@@ BEFORE %s'%(df))
+        print('@@@@@@@@ %s'%(result))
+        df.loc[len(df)]=result
+        print('@@@@@@@@ AFTER %s'%(df))
+        # df.removeduplicates
+        df.to_csv(path_record, index=False)
+        # =================================
+        # 추가구현합시다
+        # =================================
+        
+
 
 if __name__=='__main__':
 
@@ -131,7 +155,7 @@ if __name__=='__main__':
         stockcode=$1
         day_from = $2
         condition_label= $3
-        
+        path_output = $4
         
         output:
         --------------------------
@@ -141,11 +165,14 @@ if __name__=='__main__':
 
     else:
 
-        if len(sys.argv)==4:
+        if len(sys.argv)==5:
             stocklist = [sys.argv[1]]
             day_from = int(sys.argv[2])
             day_end = int(sys.argv[2])-1
             condition_label = sys.argv[3]
+            path_output = sys.argv[4]
+
+
             condition_dic_full = {#'TP': cf.COND_PROD,
                                   'TA': cf.COND_TEST_A,
                                   'TB': cf.COND_TEST_B,
@@ -192,7 +219,7 @@ if __name__=='__main__':
             day_from = 30
             day_end = 0
             condition_dic_selected=cf.COND_PROD
-
+            
 
 
 
@@ -234,7 +261,8 @@ if __name__=='__main__':
 
                         PURCHASED_HIGH = max(PURCHASED_HIGH, PURCHASED_HOLD)
                         LOSS_HIGH = min(AMOUNT_HOLD * close_day - PURCHASED_HOLD, LOSS_HIGH)
-
+                        
+                        record([stockcode,0,0], path_output)
                         print('* DAILY_%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%.3f\t%s\t%s' % (list(condition_buy.keys())[0],
                                                                          stockcode,
                                                                          the_date,
