@@ -9,22 +9,28 @@ BASH SCRIPT 로 SPACE SPLITED STRING (LIST) ARGV 넘겨야 할때 사용함
 parser = argparse.ArgumentParser(description='Conditionally get Stockcode List')
 parser.add_argument('--whom', type=str, default='ins', metavar='w',
                     help='window, option:ins, for, yg, samo')
-parser.add_argument('--window', type=int, default=5, metavar='w',
+
+parser.add_argument('--window', type=int, default=5, metavar='n',
                     help='window, option:ins, for, yg, samo')
-parser.add_argument('--seperator', type=str, default='s', metavar='f',
+
+parser.add_argument('--seperator', type=str, default='s', metavar='s',
                      help='s: space separated list, c: comma separated list,')
-parser.add_argument('--row_num_from', type=int, default=0, metavar='s',
+
+parser.add_argument('--row_num_from', type=int, default=0, metavar='f',
                      help='row_num_from')
-parser.add_argument('--row_num_to', type=int, default=20, metavar='e',
+parser.add_argument('--row_num_to', type=int, default=20, metavar='t',
                      help='row_num_to')
+
 parser.add_argument('--date_idx', type=int, default=0, metavar='d',
                      help='date_idx')
 parser.add_argument('--min_market_cap', type=int, default=1, metavar='m',
                      help='min_market_cap')
-parser.add_argument('--descending', type=int, default=True, metavar='m',
-                     help='descending')
-parser.add_argument('--verbose', type=bool, default=False, metavar='v',
-                     help="print query or not")
+
+
+parser.add_argument('--descending', type=int, default=1, metavar='m',
+                     help='descending, 0 or 1')
+parser.add_argument('--verbose', type=int, default=0, metavar='v',
+                     help="print query or not, 0 or 1")
 
 args = parser.parse_args()
 
