@@ -11,6 +11,7 @@ dbScheme = cs.DBSCHEME
 
 
 
+
 def insert(query):
 
     cnxn = mc.connect(host=ip, database=dbScheme, user=id, password=pw)
