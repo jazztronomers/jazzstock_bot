@@ -592,11 +592,11 @@ class JazzstockObject:
         df_volume_head_10['FLUCT'] = df_volume_head_10['HIGH']-df_volume_head_10['OPEN']
 
 
-        print(df_volume_head_10)
-        print('HEAD 20 ROWS, VOLUME MEAN : ', df_volume_head_10['VOLUME'].mean())
-        print('HEAD 20 ROWS, FLUCT MEAN : ', (df_volume_head_10['FLUCT']/df_volume_head_10['OPEN']).mean())
-        print('HEAD 20 ROWS, CLOSE MEAN : ', df_volume_head_10['CLOSE'].mean())
-        print('UPPER 10%, VOLUME : ', rt['VOLUME'].quantile(0.85))
+        # print(df_volume_head_10)
+        # print('HEAD 20 ROWS, VOLUME MEAN : ', df_volume_head_10['VOLUME'].mean())
+        # print('HEAD 20 ROWS, FLUCT MEAN : ', (df_volume_head_10['FLUCT']/df_volume_head_10['OPEN']).mean())
+        # print('HEAD 20 ROWS, CLOSE MEAN : ', df_volume_head_10['CLOSE'].mean())
+        # print('UPPER 10%, VOLUME : ', rt['VOLUME'].quantile(0.85))
         # print('HEAD 10 ROWS, HIGH ABS: ', df_volume_head_10['HIGH'].max())
         # print('HEAD 10 ROWS, HIGH WHOLE: ', rt['HIGH'].max())
 

@@ -122,19 +122,12 @@ def index_to_date(idx):
 def record(result, path_record):
 
     if not os.path.isfile(path_record):
-        print('@@@@@@@@ GEN CSV : %s'%(path_record))
-        print('@@@@@@@@ %s'%(result))
         df = pd.DataFrame(columns=['STOCKCODE','AMOUNT','PURCHASED'])
         df.loc[len(df)]=result
         df.to_csv(path_record, index=False)
     else:
-        print('@@@@@@@@ APPEND CSV : %s'%(path_record))
         df = pd.read_csv(path_record)
-        
-        print('@@@@@@@@ BEFORE %s'%(df))
-        print('@@@@@@@@ %s'%(result))
         df.loc[len(df)]=result
-        print('@@@@@@@@ AFTER %s'%(df))
         # df.removeduplicates
         df.to_csv(path_record, index=False)
         # =================================
@@ -168,7 +161,7 @@ if __name__=='__main__':
         if len(sys.argv)==5:
             stocklist = [sys.argv[1]]
             day_from = int(sys.argv[2])
-            day_end = int(sys.argv[2])-1
+            day_end = int(sys.argv[2])
             condition_label = sys.argv[3]
             path_output = sys.argv[4]
 
@@ -282,15 +275,15 @@ if __name__=='__main__':
 
                     except Exception as e:
                         print('* ERROR %s, %s '%(e, stockcode))
-                print('* WHOLE_%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%.3f\t%s\t%s' % (list(condition_buy.keys())[0],
-                                                                         stockcode,
-                                                                         the_date,
-                                                                         PURCHASED_HOLD,                            # 보유금액
-                                                                         AMOUNT_HOLD * close_day,                   # 평가금액
-                                                                         AMOUNT_HOLD * close_day - PURCHASED_HOLD,  # 기대수익
-                                                                         PROFIT,
-                                                                         PURCHASED_CUM,
-                                                                         SELL_CUM,
-                                                                         0 if PURCHASED_CUM == 0 else PROFIT/PURCHASED_CUM*100,
-                                                                         PURCHASED_HIGH,
-                                                                         LOSS_HIGH))
+               # print('* WHOLE_%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%.3f\t%s\t%s' % (list(condition_buy.keys())[0],
+               #                                                          stockcode,
+               #                                                          the_date,
+               #                                                          PURCHASED_HOLD,                            # 보유금액
+               #                                                          AMOUNT_HOLD * close_day,                   # 평가금액
+               #                                                          AMOUNT_HOLD * close_day - PURCHASED_HOLD,  # 기대수익
+               #                                                          PROFIT,
+               #                                                          PURCHASED_CUM,
+               #                                                          SELL_CUM,
+               #                                                          0 if PURCHASED_CUM == 0 else PROFIT/PURCHASED_CUM*100,
+               #                                                          PURCHASED_HIGH,
+               #                                                          LOSS_HIGH))
