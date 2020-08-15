@@ -42,16 +42,6 @@ COND_TEMPLATE = {
 }
 
 
-
-def condition_generator_bigger(cond_dict):
-    '''
-
-    언제 만들꺼 ??
-    :param cond_dict:
-    :return:
-    '''
-
-
 COND_TEST_C= {
     'TEST_DEBUG': {
         'VSMAR5': ['BIGGER', 1],
@@ -107,4 +97,12 @@ COND_TEST_E= {
     },
 }
 
+condition_dict = {
 
+    'TA': COND_TEST_A,
+    'TB': COND_TEST_B,
+    'TC': COND_TEST_C,
+    'TD': COND_TEST_D,
+    'TE': COND_TEST_E,
+    'TP': COND_PROD,
+}

@@ -85,18 +85,42 @@ class JazzstockCoreSimulationCustom(JazzstockCoreSimulation):
 
 
         purchased, selled = 0, 0
-        st = datetime.now()
-
         for row in self.obj.df_ohlc_realtime_filled.values:
             tempdf = pd.DataFrame(data=[row], columns=self.obj.df_ohlc_realtime_filled.columns)
-            res = self.obj.check_status(tempdf, condition_buy, condition_sell=None)
+            res = self.obj.check_status(tempdf, self.condition_buy, condition_sell=None)
             if 'purchased' in res.keys():
                 purchased += res['purchased']
             elif 'selled' in res.keys():
                 selled += res['selled']
 
         close_day = self.obj.df_ohlc_realtime_filled.CLOSE.tail(1).values[0]
-        return self.obj.purchased, self.obj.amount, self.obj.profit, purchased, selled, close_day
+        return self.obj.purchased, \
+               self.obj.amount, \
+               self.obj.profit, \
+               purchased, selled, \
+               close_day
+
+
+    def set_account(self, path, daily_dict):
+        '''
+        :param path:
+        :param daily_dict:
+        '''
+
+        columns = ['STOCKCODE',
+                   'PRICE_HOLD',
+                   'PRICE_CLOSE',
+                   'PROFIT_REALTIME',
+                   'AMOUNT_HOLD',
+                   'AMOUNT_FLUCT',
+                   'PROFIT_REALIZED']
+
+        if 'account.csv' in os.listdir(path):
+            df_account = pd.DataFrame('')
+
+        else:
+
+            df = pd.read_csv(os.path.join(path,'account.csv'))
 
 
 def summary(tpl):
