@@ -14,8 +14,6 @@ else:
 	INSTANCE_ID = 'T01'
 
 
-print(" * CONDITION INITIALIZED, instance_id: %s" %(INSTANCE_ID))
-
 COND_PROD = {
 
 
