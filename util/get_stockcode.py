@@ -1,6 +1,9 @@
 import common.connector_db as db
 import argparse
 
+
+
+
 '''
 COMMAND LINE에서 ARGV를 받아서 쿼리를 실행하여 반환 받은 결과를
 BASH SCRIPT 로 SPACE SPLITED STRING (LIST) ARGV 넘겨야 할때 사용함
@@ -36,6 +39,7 @@ args = parser.parse_args()
 
 
 
+
 WHOM = args.whom
 WINDOW = args.window
 SEPERATOR = ',' if args.seperator=='c' else ' '
@@ -46,39 +50,65 @@ MIN_MARKET_CAP = args.min_market_cap
 DESCENDING = 'DESC' if args.descending else 'ASC'
 
 
-WINDOW_DICT = {
 
-    'ins':'I',
-    'for':'F',
-    'yg':'YG',
-    'per':'PS',
-    'samo':'S'
 
-}
-query = f'''
+def get_stockcode(whom=WHOM, window=WINDOW, row_num_from=ROW_NUM_FROM, row_num_to=ROW_NUM_TO, date_idx =DATE_IDX,
+                  min_market_cap=MIN_MARKET_CAP, descending=DESCENDING):
+    '''
+    :param whom 어느주체를 선택 할지 ( ins, for, yg, per, samo )
+    :param window 수급순위 뽑을때 windows size, default 5
+    :param row_num_from
+    :param row_num_to
+    :param date_idx
+    :param min_market_cap
+    :param descending
+    '''
 
-SELECT STOCKCODE
-FROM
-(
-    SELECT STOCKCODE,
-        ROW_NUMBER() OVER (PARTITION BY DATE ORDER BY {WINDOW_DICT[WHOM]}{WINDOW} {DESCENDING}) AS RN
-    FROM jazzdb.T_STOCK_SND_ANALYSIS_RESULT_TEMP
-    JOIN jazzdb.T_DATE_INDEXED USING (DATE)
-    JOIN jazzdb.T_STOCK_MC USING (STOCKCODE, DATE)
-    WHERE 1=1
-    AND CNT = {DATE_IDX}
-    AND MC > {MIN_MARKET_CAP}          # 1300종목
-) A
-WHERE 1=1 
-AND RN BETWEEN {ROW_NUM_FROM} AND {ROW_NUM_TO}
+    WINDOW_DICT = {
 
-'''
-if args.verbose:
+        'ins': 'I',
+        'for': 'F',
+        'yg': 'YG',
+        'per': 'PS',
+        'samo': 'S'
 
-    print(f'QUERY:\n{query}\n===========================================')
+    }
+    query = f'''
 
-sl = db.selectSingleColumn(query)         # SELECT 결과를 리스트로 받음
-rt = SEPERATOR.join(sl)
-print(rt)
+    SELECT STOCKCODE
+    FROM
+    (
+        SELECT STOCKCODE,
+            ROW_NUMBER() OVER (PARTITION BY DATE ORDER BY {WINDOW_DICT[whom]}{window} {descending}) AS RN
+        FROM jazzdb.T_STOCK_SND_ANALYSIS_RESULT_TEMP
+        JOIN jazzdb.T_DATE_INDEXED USING (DATE)
+        JOIN jazzdb.T_STOCK_MC USING (STOCKCODE, DATE)
+        WHERE 1=1
+        AND CNT = {date_idx}
+        AND MC > {min_market_cap}          # 1300종목
+    ) A
+    WHERE 1=1 
+    AND RN BETWEEN {row_num_from} AND {row_num_to}
+
+    '''
+
+
+
+    if args.verbose:
+        print(f'QUERY:\n{query}\n===========================================')
+
+    stockcode_list = db.selectSingleColumn(query)  # SELECT 결과를 리스트로 받음
+    return stockcode_list
+
+
+
+if __name__ =='__main__':
+
+    # COMMAND LINE 에서 실행시, RETURN 값을 출력해서
+    # STDOUT parsing해서 값을 가져가기 위함
+    stockcode_list=get_stockcode()
+    rt = SEPERATOR.join(stockcode_list)
+    print(rt)
+
 
 

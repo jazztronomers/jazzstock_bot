@@ -43,10 +43,13 @@ class JazzstockObject_Account(JazzstockObject):
         if (amount > self.amount):
             amount = self.amount
 
+        # 매도직전 평단:
+
         # 이번 판매로 인한 수익금 (판매가 - 평단)
         profit = amount * row.CLOSE - (self.purchased / self.amount * amount)
         self.selled = float(row.CLOSE) * amount
         self.profit += float(profit)
+
 
         # 이번 판매로 인한 매수금액 조정
         self.purchased = float(self.purchased * (self.amount - amount) / self.amount)
@@ -56,7 +59,8 @@ class JazzstockObject_Account(JazzstockObject):
         self.amount = self.amount - amount
         self._record(action='S',row=row, amount=amount, profit=profit)
 
-        return float(row.CLOSE * amount)
+        return {'selled_thistime':float(row.CLOSE * amount),
+                'profit_thistime':float(profit)}
 
     def _record(self, action, row, amount, profit=0):
         print('* ROW ', self.stockname, action, int(row.CLOSE), str(row.DATE.values), str(row.TIME.values), amount, int(profit))
@@ -70,12 +74,12 @@ class JazzstockObject_Account(JazzstockObject):
             ifbuy = self.shouldbuy(row,condition_buy)
 
             # 팔아야 한다면
-            if (ifsell):
-                selled = self._sell(row, ifsell)
-                return {'selled':selled}
+            if ifsell:
+                selled_result = self._sell(row, ifsell)
+                return {'selled':selled_result['selled_thistime'], 'profit':selled_result['profit_thistime']}
 
             # 사야 한다면
-            elif (ifbuy):
+            elif ifbuy:
                 purchased = self._buy(row, ifbuy)
                 return {'purchased': purchased}
             # 아니면
