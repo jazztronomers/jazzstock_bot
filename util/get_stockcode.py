@@ -48,12 +48,12 @@ ROW_NUM_TO= args.row_num_to
 DATE_IDX = args.date_idx
 MIN_MARKET_CAP = args.min_market_cap
 DESCENDING = 'DESC' if args.descending else 'ASC'
-
+VERBOSE = args.verbose
 
 
 
 def get_stockcode(whom=WHOM, window=WINDOW, row_num_from=ROW_NUM_FROM, row_num_to=ROW_NUM_TO, date_idx =DATE_IDX,
-                  min_market_cap=MIN_MARKET_CAP, descending=DESCENDING):
+                  min_market_cap=MIN_MARKET_CAP, descending=DESCENDING, verbose=VERBOSE):
     '''
     :param whom 어느주체를 선택 할지 ( ins, for, yg, per, samo )
     :param window 수급순위 뽑을때 windows size, default 5
@@ -94,7 +94,7 @@ def get_stockcode(whom=WHOM, window=WINDOW, row_num_from=ROW_NUM_FROM, row_num_t
 
 
 
-    if args.verbose:
+    if verbose:
         print(f'QUERY:\n{query}\n===========================================')
 
     stockcode_list = db.selectSingleColumn(query)  # SELECT 결과를 리스트로 받음

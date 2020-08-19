@@ -134,7 +134,7 @@ class JazzstockObject:
         st=datetime.now()
         query = '''
 
-        SELECT DATE, REPLACE(TIME,":","") AS TIME, OPEN, HIGH, LOW, CLOSE, VOLUME
+        SELECT CAST(DATE AS CHAR) AS DATE, REPLACE(TIME,":","") AS TIME, OPEN, HIGH, LOW, CLOSE, VOLUME
         FROM jazzdb.T_STOCK_OHLC_MIN
         JOIN jazzdb.T_DATE_INDEXED USING (DATE)
         WHERE 1=1
@@ -559,7 +559,11 @@ class JazzstockObject:
         :param cutoff: 볼밴하단 이탈율
         :return: 볼밴하단 이탈의 가격
         '''
-        return percent*(BBU-BBL)+BBU
+
+        if BBU is not None and BBL is not None:
+            return percent*(BBU-BBL)+BBU
+        else:
+            return None
 
     def _cal_price_pierce_bbl_(self, BBU, BBL, percent):
         '''
@@ -569,7 +573,11 @@ class JazzstockObject:
         :param cutoff: 볼밴하단 이탈율
         :return: 볼밴하단 이탈의 가격
         '''
-        return percent*(BBU-BBL)+BBL
+
+        if BBU is not None and BBL is not None:
+            return percent*(BBU-BBL)+BBL
+        else:
+            return None
 
 
 

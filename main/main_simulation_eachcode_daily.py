@@ -1,8 +1,6 @@
-import common.connector_db as db
 import argparse
 import util.util as ut
 import os
-import sys
 import config.condition as cd
 from crawl.jazzstock_core_simulation import JazzstockCoreSimulationCustom
 '''
@@ -50,6 +48,10 @@ COND= cd.condition_dict[args.condition_label]
 
 PATH_ACCOUNT = args.account_path
 
+
+# print(args)
+# print(DATE)
+
 ''' jazzstock_bot/simulation/<time>/<rule>/account.csv 
                                            <stockcode>/buysell.log
                                                        daily.log '''
@@ -69,7 +71,7 @@ t = JazzstockCoreSimulationCustom(stockcode      = STOCKCODE,
 
 
 hold_purchased, amount, profit, purchased, selled, close_day, = t.simulate()
-
 f = open(PATH_ACCOUNT,'a')
 f.write(f'{STOCKCODE},{DATE},{hold_purchased},{amount},{profit},{purchased},{selled},{close_day}\n')
 f.close()
+

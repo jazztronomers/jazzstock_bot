@@ -5,7 +5,7 @@ def date_to_index(date):
     return cnt
 
 def index_to_date(idx):
-    thedate = db.selectSingleValue("SELECT DATE FROM jazzdb.T_DATE_INDEXED WHERE 1=1 AND CNT = '%s'"%(idx))
+    thedate = db.selectSingleValue("SELECT CAST(DATE AS CHAR) AS DATE FROM jazzdb.T_DATE_INDEXED WHERE 1=1 AND CNT = '%s'"%(idx))
     return thedate
 
 

@@ -8,25 +8,7 @@ from datetime import datetime
 import util.get_stockcode as gs
 
 
-
-
-
-# ====================================
-# CONFIG
-# ====================================
-
-NOW = str(datetime.now().strftime("%Y%m%d%H%M%S"))
-print('start..... %s\n'%(NOW))
-PATH_ROOT=jazzstock_bot.PATH_MAIN
-PATH_LOG = os.path.join(jazzstock_bot.PATH_SIMULATION, 'result', NOW)
-COLUMNS = ['STOCKCODE','DATE','HOLDPURCHASED','HOLDAMOUNT','PROFIT','HISTPURCHASED','HISTSELLED','CLOSEDAY']
-COLUMNS_NUMERIC = COLUMNS[2:]
-os.makedirs(PATH_LOG, exist_ok=True)
-
-process_q, len_q = [], 8
-
 def run_script(script_name='test_argv_printer.py', argument = ['--stockcode', '079940'], file_log_cond='./'):
-    global log
     src_abs_path = os.path.join(PATH_ROOT, script_name)
     proc = subprocess.Popen(['python', '-u', src_abs_path]+argument, stdout=file_log_cond, stderr=file_log_cond, shell=True)
     return proc
@@ -75,41 +57,41 @@ def get_stockcode_from_account(path_account):
         return []
 
 
-def main():
+def main(date_idx_from, date_idx_to):
 
 
-    for COND in ['TP']:
+    for COND in ['TA','TB','TC','TD','TE']:
+
+        START = datetime.now()
+
         PATH_LOG_COND = os.path.join(os.path.join(PATH_LOG, COND))
         os.makedirs(PATH_LOG_COND, exist_ok=True)
         FILE_LOG_COND = open(os.path.join(PATH_LOG_COND, 'fulllog.log'),'a')
         PATH_ACCOUNT = os.path.join(os.path.join(PATH_LOG_COND, 'account.csv'))
 
 
-        for date_idx in range(50,30,-1):
-
-            print('='*60)
-            print(COND,date_idx)
-            print('='*60)
+        for date_idx in range(date_idx_from, date_idx_to,-1):
+            print(COND,date_idx, datetime.now()-START)
 
             while not should_run(9999, date_change=True):
                 pass
-            stockcode_new = gs.get_stockcode(# whom=WHOM,
-                                             # window=WINDOW,
-                                             # descending=DESCENDING
+            stockcode_new = gs.get_stockcode(whom='per',
+                                             window=5,
+                                             descending='ASC',
                                              row_num_from=0,
-                                             row_num_to=50,
+                                             row_num_to=80,
                                              date_idx =date_idx,
-                                             min_market_cap=1)
+                                             min_market_cap=1,
+                                             )
             stockcode_acc = get_stockcode_from_account(PATH_ACCOUNT)
             stockcode_list = list(stockcode_new)
             stockcode_list.extend(x for x in stockcode_acc if x not in stockcode_list)
 
 
 
-            print('금일모니터링 종목:', len(stockcode_list))
+            # print('금일모니터링 종목:', len(stockcode_list))
 
             for stockcode in stockcode_list:
-
                 while not should_run(stockcode_list_len=len(stockcode_list)):
                     pass
 
@@ -142,17 +124,30 @@ def main():
                                                                               '--amount', str(HOLD_AMOUNT), \
                                                                               '--histpurchased', str(HISTPURCHASED), \
                                                                               '--histselled', str(HISTSELLED), \
-
                                                                               '--condition_label', str(COND),\
                                                                               '--account_path', PATH_ACCOUNT],
                                                                     file_log_cond=FILE_LOG_COND)
-                print(date_idx, stockcode, p.pid, HISTPURCHASED)
                 time.sleep(0.5)
                 process_q.append(p.pid)
 
 
+
+
+
 if __name__ == '__main__':
-    main()
+
+    for date_idx_from, date_idx_to in [(156,95),(94,34),(33,0)]:
+
+        NOW = '%s_%s'%(datetime.now().strftime("%Y%m%d%H%M%S"), date_idx_from)
+        print('start..... %s\n' % (NOW))
+        PATH_ROOT = jazzstock_bot.PATH_MAIN
+        PATH_LOG = os.path.join(jazzstock_bot.PATH_SIMULATION, 'result', NOW)
+        COLUMNS = ['STOCKCODE', 'DATE', 'HOLDPURCHASED', 'HOLDAMOUNT', 'PROFIT', 'HISTPURCHASED', 'HISTSELLED', 'CLOSEDAY']
+        COLUMNS_NUMERIC = COLUMNS[2:]
+        os.makedirs(PATH_LOG, exist_ok=True)
+
+        process_q, len_q = [], 10
+        main(date_idx_from, date_idx_to)
 
 
 

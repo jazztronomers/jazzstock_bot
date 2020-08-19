@@ -2,9 +2,7 @@ import sys
 import common.connector_db as db
 import util.index_calculator as ic
 import pandas as pd
-import config.condition as cf
-import os
-import argparse
+import config.condition as cd
 from datetime import datetime
 from crawl.jazzstock_object_account import JazzstockObject_Account
 
@@ -39,6 +37,10 @@ class JazzstockCoreSimulation:
         self.obj.set_prev_day_index()
 
         self.obj.df_ohlc_realtime_filled = ic.fillindex(self.obj.df_ohlc_min)     # 5분봉에 지표들을 붙여줌
+
+        # # 의문의 DATE타임 전처리.... 왜인지 어떤건 되고 어떤건 안됨
+        # self.obj.df_ohlc_realtime_filled.DATE = self.obj.df_ohlc_realtime_filled.DATE.astype(str)
+
         self.obj.df_ohlc_realtime_filled = self.obj.df_ohlc_realtime_filled[self.obj.df_ohlc_realtime_filled.DATE==the_date]
         self.COLUMNS_DAY=['DATE', 'TIME', 'CLOSE', 'VSMAR20', 'BBP', 'BBW', 'K', 'D', 'J']
         self.COLUMNS_MIN = ['DATE', 'TIME', 'CLOSE', 'VSMAR20', 'BBP', 'BBW', 'K', 'D', 'J']
@@ -49,6 +51,7 @@ class JazzstockCoreSimulation:
         self.hist_selled = hist_selled
 
         # DEBUGGING ================================================
+        # print(stockcode, the_date, the_date_index)
         # print(self.obj.df_ohlc_day.tail(2))
         # print(self.obj.df_ohlc_realtime_filled.tail(10))
         # DEBUGGING ================================================
@@ -58,6 +61,11 @@ class JazzstockCoreSimulation:
 
 class JazzstockCoreSimulationCustom(JazzstockCoreSimulation):
     def __init__(self, stockcode, condition_buy, the_date, the_date_index, purchased, amount, hist_purchased, hist_selled):
+
+        # debug = [stockcode, condition_buy, the_date, the_date_index, purchased, amount, hist_purchased, hist_selled]
+        # for e in debug:
+        #     print(type(e), e)
+
         super().__init__(stockcode, condition_buy, the_date, the_date_index, purchased, amount, hist_purchased, hist_selled)
 
 
@@ -94,7 +102,8 @@ class JazzstockCoreSimulationCustom(JazzstockCoreSimulation):
                 hist_selled += res['selled']        # 시뮬레이션 시작이후 누적매도
                 hist_purchased +=  res['selled']-res['profit']
 
-
+        # print(self.obj.stockcode)
+        # print(self.obj.df_ohlc_realtime_filled.CLOSE)
 
         close_day = self.obj.df_ohlc_realtime_filled.CLOSE.tail(1).values[0]
         return self.obj.purchased, \
@@ -110,6 +119,13 @@ class JazzstockCoreSimulationCustom(JazzstockCoreSimulation):
 
 
 if __name__=='__main__':
-
-    pass
-    ## argparse는 귀찮다..
+    test = JazzstockCoreSimulationCustom(stockcode = '288330',
+                                         amount=0,
+                                         purchased=0,
+                                         the_date_index=155,
+                                         the_date='2020-01-03',
+                                         hist_purchased=0,
+                                         hist_selled=0,
+                                         condition_buy=cd.COND_TEST_A)
+    r = test.simulate()
+    print(r)
