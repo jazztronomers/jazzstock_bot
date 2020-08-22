@@ -75,9 +75,9 @@ def main(date_idx_from, date_idx_to):
 
             while not should_run(9999, date_change=True):
                 pass
-            stockcode_new = gs.get_stockcode(whom='per',
+            stockcode_new = gs.get_stockcode(whom='for',
                                              window=5,
-                                             descending='ASC',
+                                             descending='DESC',
                                              row_num_from=0,
                                              row_num_to=80,
                                              date_idx =date_idx,
@@ -136,7 +136,7 @@ def main(date_idx_from, date_idx_to):
 
 if __name__ == '__main__':
 
-    for date_idx_from, date_idx_to in [(156,95),(94,34),(33,0)]:
+    for date_idx_from, date_idx_to in [(157,96),(95,35),(34,0)]:
 
         NOW = '%s_%s'%(datetime.now().strftime("%Y%m%d%H%M%S"), date_idx_from)
         print('start..... %s\n' % (NOW))
