@@ -1,4 +1,5 @@
 from datetime import datetime
+st0 = datetime.now()
 import argparse
 st1 = datetime.now()
 import util.util as ut
@@ -80,9 +81,12 @@ f = open(PATH_ACCOUNT,'a')
 f.write(f'{STOCKCODE},{DATE},{hold_purchased},{amount},{profit},{purchased},{selled},{close_day}\n')
 f.close()
 
-print(datetime.now()-st1)
-print(datetime.now()-st2)
-print(datetime.now()-st3)
-print(datetime.now()-st4)
-print(datetime.now()-st5)
-print(datetime.now()-st6)
+st8 = datetime.now()
+print('IMPORT ARGPARSE', st1-st0)
+print('IMPORT UTIL', st2-st1)
+print('IMPORT COND', st3-st2)
+print('IMPORT OBJECT', st4-st3)
+print('PARSE ARG', st5-st4)
+print('IDX TO DATE', st6-st5)
+print('SIMULATE', st7-st6)
+print('APPEND ROW', st7-st6)
