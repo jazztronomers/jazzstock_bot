@@ -5,7 +5,7 @@ SEPERATOR = ' '
 
 
 parser = argparse.ArgumentParser(description='Conditionally get Stockcode List')
-parser.add_argument('--stockcode', type=str, default='000000', metavar='w',
+parser.add_argument('--stockcode', type=str, default='289010', metavar='w',
                     help='stockcode')
 
 parser.add_argument('--account_path', type=str, default='account.csv', metavar='n',
