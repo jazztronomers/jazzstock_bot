@@ -32,7 +32,7 @@ parser.add_argument('--histselled', type=int, default=0, metavar='a',
 
 parser.add_argument('--condition_label', type=str, default='TP', metavar='c',
                     help='conditon_label')
-parser.add_argument('--account_path', type=str, default='account.csv', metavar='a',
+parser.add_argument('--account_path', type=str, default='account_<stockcode>.csv', metavar='a',
                     help='account_path')
 
 
@@ -83,7 +83,7 @@ t = JazzstockCoreSimulationCustom(stockcode      = STOCKCODE,
 hold_purchased, amount, profit, purchased, selled, close_day, = t.simulate()
 
 st7 = datetime.now()
-f = open(PATH_ACCOUNT,'a')
+f = open(PATH_ACCOUNT.replace('<stockcode>',STOCKCODE),'a')
 f.write(f'{STOCKCODE},{DATE},{hold_purchased},{amount},{profit},{purchased},{selled},{close_day}\n')
 f.close()
 
