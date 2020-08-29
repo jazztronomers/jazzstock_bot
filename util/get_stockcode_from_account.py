@@ -10,7 +10,9 @@ parser.add_argument('--account_path', type=str, default='account.csv', metavar='
 
 args = parser.parse_args()
 
-def get_stockcode_from_account(path_account, date_idx):
+
+
+def get_stockcode_from_account(path_log_cond):
     '''
     account.csv 를 읽어서 가장 최근기준 amount가 0 이상인 종목을 리스트로 반환함
     '''
@@ -19,16 +21,10 @@ def get_stockcode_from_account(path_account, date_idx):
     COLUMNS_NUMERIC = COLUMNS[2:]
 
 
-
-    # account path 에 있는 .csv 파일들 다 돌려서 최신 홀딩 정보를 가져와야함
-    # input이 현재기준 돌리는 데이트가 나와야함.
-
-
-
-    for eachcsv in os.listdir(path_account):
-
-        if os.path.isfile(path_account):
-            df = pd.read_csv(path_account, header=None, dtype=str)
+    stockcode_list = []
+    for eachfile in os.listdir(path_log_cond):
+        if '.csv' in eachfile:
+            df = pd.read_csv(os.path.join(path_log_cond, eachfile), header=None, dtype=str)
             df.columns = COLUMNS
             for each in COLUMNS_NUMERIC:
                 df[each] = df[each].astype('float')
@@ -37,14 +33,11 @@ def get_stockcode_from_account(path_account, date_idx):
             df= df[df['DATE']==df['DATE'].max()]
 
             # amount가 0이 아닌애들만
-            df = df[df.HOLDAMOUNT>0]
+            if df.HOLDAMOUNT.values[0]>0:
+                stockcode_list.append(df.STOCKCODE.values[0])
 
-
-            return list(df.STOCKCODE)
-        else:
-            return []
-
-
+    print('DEBUG : %s'%(stockcode_list))
+    return stockcode_list
 
 if __name__ =='__main__':
 
