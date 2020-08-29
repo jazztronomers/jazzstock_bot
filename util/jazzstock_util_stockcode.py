@@ -1,35 +1,35 @@
 import common.connector_db as db
 import argparse
 
+
 class StockcodeManager():
     '''
     COMMAND LINE에서 ARGV를 받아서 쿼리를 실행하여 반환 받은 결과를
     BASH SCRIPT 로 SPACE SPLITED STRING (LIST) ARGV 넘겨야 할때 사용함
     '''
+
     def __init__(self, **params):
+        # self.query=''''''
+        # self.params_mandatory = self.parse_argv()
 
-        self.query=''''''
-        self.params_mandatory = self.parse_argv()
-
-        for k,v in params.items():
-            self.params_mandatory[k] = v
-
+        # for k,v in params.items():
+        #    self.params_mandatory[k] = v
+        pass
 
     def parse_argv(self):
         self.parser = argparse.ArgumentParser(description='Conditionally get Stockcode List')
         self.parser.add_argument('--row_num_from', type=int, default=0, metavar='f',
-                            help='row_num_from')
+                                 help='row_num_from')
         self.parser.add_argument('--row_num_to', type=int, default=20, metavar='t',
-                            help='row_num_to')
+                                 help='row_num_to')
         self.parser.add_argument('--date_idx', type=int, default=0, metavar='d',
-                            help='date_idx')
+                                 help='date_idx')
         self.parser.add_argument('--verbose', type=int, default=0, metavar='v',
-                            help="print query or not, 0 or 1")
+                                 help="print query or not, 0 or 1")
 
-        return vars(self.parser.parse_args())
+        # return vars(self.parser.parse_args())
 
     def set_query(self, query=None):
-
         print('HERE')
         if query is None:
             query = f'''
@@ -55,7 +55,6 @@ class StockcodeManager():
         return list(df.STOCKCODE)
 
     def return_to_python(self):
-
         self.query = self.set_query()
         self.stockcode_list = self.execute_query()
         return self.stockcode_list
@@ -70,26 +69,26 @@ class StockcodeManager_default(StockcodeManager):
     def __init__(self, **params):
         super().__init__(**params)
         self.params_mandatory = self.parse_argv()
-        for k,v in params.items():
+        for k, v in params.items():
             self.params_mandatory[k] = v
 
     def parse_argv(self):
 
         super().parse_argv()
         self.parser.add_argument('--whom', type=str, default='ins', metavar='w',
-                            help='window, option:ins, for, yg, samo')
+                                 help='window, option:ins, for, yg, samo')
 
         self.parser.add_argument('--window', type=int, default=5, metavar='n',
-                            help='window, option:ins, for, yg, samo')
+                                 help='window, option:ins, for, yg, samo')
 
         self.parser.add_argument('--seperator', type=str, default='s', metavar='s',
-                            help='s: space separated list, c: comma separated list,')
+                                 help='s: space separated list, c: comma separated list,')
 
         self.parser.add_argument('--min_market_cap', type=int, default=1, metavar='m',
-                            help='min_market_cap')
+                                 help='min_market_cap')
 
         self.parser.add_argument('--descending', type=str, default='DESC', metavar='m',
-                            help='descending, DESC or ASC')
+                                 help='descending, DESC or ASC')
 
         return vars(self.parser.parse_args())
 
@@ -123,6 +122,7 @@ class StockcodeManager_default(StockcodeManager):
             '''
         return query
 
+
 class StockcodeManager_debug(StockcodeManager):
     '''
 
@@ -133,14 +133,14 @@ class StockcodeManager_debug(StockcodeManager):
     def return_to_python(self):
         return ['079940']
 
+
 class StockcodeManager_rebound(StockcodeManager):
 
-    def __init__(self,**params):
+    def __init__(self, **params):
         super().__init__(**params)
         self.params_mandatory = self.parse_argv()
-        for k,v in params.items():
+        for k, v in params.items():
             self.params_mandatory[k] = v
-
 
     # def parse_argv(self):
     #
@@ -212,33 +212,30 @@ class StockcodeManager_rebound(StockcodeManager):
             AND FROM_PERIOD_HIGH BETWEEN -0.2 AND -0.1				# 고점대비 10% ~ 20% 사이로 하락한 종목만
             AND CURR_POS BETWEEN 0.3 AND 0.5						# 전고점, 전저점 사이의 POSITION 이 0.3~ 0.5인 종목
             AND DATE_IDX ='{self.params_mandatory['date_idx']}'
-            
+
             ORDER BY CURR_POS DESC
             LIMIT 30
 
             '''
 
-
-
         return query
 
 
-if __name__ =='__main__':
-
+if __name__ == '__main__':
     # COMMAND LINE 에서 실행시, RETURN 값을 출력해서
     # STDOUT parsing해서 값을 가져가기 위함
 
-    obj = StockcodeManager()
-    obj.return_to_bash()
+    # obj = StockcodeManager()
+    # obj.return_to_bash()
 
     obj = StockcodeManager_default()
     obj.return_to_bash()
 
-    obj = StockcodeManager_rebound()
-    obj.return_to_bash()
-    # stockcode_list=get_stockcode()
-    # rt = SEPERATOR.join(stockcode_list)
-    # print(rt)
+    # obj = StockcodeManager_rebound()
+#  obj.return_to_bash()
+# stockcode_list=get_stockcode()
+# rt = SEPERATOR.join(stockcode_list)
+# print(rt)
 
 
 
