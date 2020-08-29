@@ -36,7 +36,7 @@ def get_stockcode_from_account(path_log_cond):
             if df.HOLDAMOUNT.values[0]>0:
                 stockcode_list.append(df.STOCKCODE.values[0])
 
-    print('DEBUG : %s'%(stockcode_list))
+    # print('DEBUG : %s'%(stockcode_list))
     return stockcode_list
 
 if __name__ =='__main__':
