@@ -8,13 +8,31 @@ from datetime import datetime
 from util.jazzstock_util_stockcode import *
 
 
-def run_script(script_name='test_argv_printer.py', argument = ['--stockcode', '079940'], file_log_cond='./'):
+def run_script(script_name='test_argv_printer.py', argument = ['--stockcode', '079940'], path_log_cond='./'):
+    '''
+
+    subprocess로 파이썬 스크립트를 실행해주는 함수
+
+    :param script_name: 실행스크립트 파일 + 상대경로
+    :param argument:    실행스크립트에 넘겨줄 argvment
+    :param path_log_cond: 스크립트 실행 로그를 저장하는 경로
+    :return:
+    '''
     src_abs_path = os.path.join(PATH_ROOT, script_name)
-    proc = subprocess.Popen(['python', '-u', src_abs_path]+argument, stdout=file_log_cond, stderr=file_log_cond, shell=True)
+    proc = subprocess.Popen(['python', '-u', src_abs_path] + argument, stdout=path_log_cond, stderr=path_log_cond, shell=True)
     return proc
 
 
-def should_run(stockcode_list_len, date_change=False):
+def _should_run(stockcode_list_len, date_change=False):
+    '''
+
+    추가로 subprocess를 띄울지 판단하는 함수
+    main 함수 내부함수로 신경 쓸 필요 없음
+
+    :param stockcode_list_len:
+    :param date_change: 일자변경여부 체크,
+    :return:
+    '''
 
     global process_q
     process_q = [p for p in process_q if psutil.pid_exists(p)]
@@ -53,13 +71,11 @@ def get_stockcode_from_account(path_log_cond):
             if df.HOLDAMOUNT.values[0]>0:
                 stockcode_list.append(df.STOCKCODE.values[0])
 
-    print('DEBUG : %s'%(stockcode_list))
+
     return stockcode_list
 
 
 def main(date_idx_from, date_idx_to):
-
-
     for COND in ['TP','TA','TC','TD']:
 
         START = datetime.now()
@@ -73,7 +89,7 @@ def main(date_idx_from, date_idx_to):
         for date_idx in range(date_idx_from, date_idx_to,-1):
             print(COND,date_idx, datetime.now()-START)
 
-            while not should_run(9999, date_change=True):
+            while not _should_run(9999, date_change=True):
                 pass
 
             params =dict(whom='for',
@@ -84,6 +100,9 @@ def main(date_idx_from, date_idx_to):
                          date_idx =date_idx,
                          min_market_cap=1,
                          )
+
+
+
             stockcode_new = StockcodeManager_default(**params).return_to_python()
             stockcode_acc = get_stockcode_from_account(PATH_LOG_COND)
             stockcode_list = list(stockcode_new)
@@ -92,11 +111,9 @@ def main(date_idx_from, date_idx_to):
 
 
             print('금일모니터링 종목 TOTAL', len(stockcode_list))
-            # print(len(stockcode_new), stockcode_new)
-            # print(len(stockcode_acc), stockcode_acc)
-            # print(PATH_ACCOUNT)
+
             for stockcode in stockcode_list:
-                while not should_run(stockcode_list_len=len(stockcode_list)):
+                while not _should_run(stockcode_list_len=len(stockcode_list)):
                     pass
 
                 # GEN OR READ EXISTS ACCOUNT FILE
@@ -131,7 +148,7 @@ def main(date_idx_from, date_idx_to):
                                                                               '--histselled', str(HISTSELLED), \
                                                                               '--condition_label', str(COND),\
                                                                               '--account_path', PATH_ACCOUNT.replace('<stockcode>',stockcode)],
-                                                                    file_log_cond=FILE_LOG_COND)
+                               path_log_cond=FILE_LOG_COND)
                 time.sleep(0.5)
                 process_q.append(p.pid)
 
@@ -141,7 +158,7 @@ def main(date_idx_from, date_idx_to):
 
 if __name__ == '__main__':
 
-    for date_idx_from, date_idx_to in [(159,96),(95,35),(34,0)]:
+    for date_idx_from, date_idx_to in [(10,0)]:
 
         NOW = '%s_%s'%(datetime.now().strftime("%Y%m%d%H%M%S"), date_idx_from)
         print('start..... %s\n' % (NOW))
