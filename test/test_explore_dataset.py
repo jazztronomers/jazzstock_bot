@@ -35,8 +35,6 @@ condition_dict = {'T01_TEST01':
                        'TRADINGVALUE': ['BIGGER',1]}}
 
 
-# 82   2020-07-22  093500    986  0.006533  0.006893  0.009539  2.728391  7.752472  16.994743  66.666667   36952
-
 
 
 
@@ -44,8 +42,12 @@ for each_idx in range(0, -1, -1):
 
     the_date = index_to_date(each_idx)
     t = JazzstockCoreSimulationCustom(stockcode, condition_dict, the_date=the_date, the_date_index=each_idx, purchased=0, amount=0, hist_selled=0, hist_purchased=0)
+
+    print(t.obj.df_ohlc_realtime_filled.columns)
+    print('=' * 100)
     print(t.obj.df_ohlc_realtime_filled)
-    res = t.obj.simul_all_condition(condition_dict)
-    print(the_date, res)
+    print('=' * 100)
+    # res = t.obj.simul_all_condition(condition_dict)
+    # print(the_date, res)
 
 
