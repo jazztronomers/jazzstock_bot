@@ -5,6 +5,8 @@ import warnings
 import config.config as cf
 import config.condition as cd
 import telepot
+import jazzstock_bot
+import os
 from datetime import datetime
 from object.jazzstock_object import JazzstockObject
 
@@ -12,10 +14,7 @@ from object.jazzstock_object import JazzstockObject
 pd.options.display.max_rows = 500
 pd.options.display.max_columns= 500
 warnings.filterwarnings('ignore')
-try:
-	timedf = pd.read_csv('../config/time.csv', dtype=str)
-except:
-	timedf = pd.read_csv('config/time.csv', dtype=str)
+timedf = pd.read_csv(os.path.join(jazzstock_bot.PATH_SRC_ROOT,'config/time.csv'), dtype=str)
 tdic = {}
 for tk, t1, t5, t15 in sorted(timedf.values.tolist()):
     tdic[str(tk).zfill(6)] = {'T1': str(t1).zfill(6), 'T5': str(t5).zfill(6), 'T15': str(t15).zfill(6)}
