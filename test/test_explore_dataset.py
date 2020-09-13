@@ -1,5 +1,5 @@
-from crawl.jazzstock_object_account import JazzstockObject_Account
-from crawl.jazzstock_core_simulation import JazzstockCoreSimulationCustom
+from object.jazzstock_object_account import JazzstockObject_Account
+from object.jazzstock_core_simulation import JazzstockCoreSimulationCustom
 import sys
 import common.connector_db as db
 import util.index_calculator as ic

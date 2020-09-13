@@ -1,4 +1,4 @@
-from crawl.jazzstock_object import JazzstockObject
+from object.jazzstock_object import JazzstockObject
 from datetime import datetime
 import copy
 class JazzstockObject_Account(JazzstockObject):

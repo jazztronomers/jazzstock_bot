@@ -6,7 +6,7 @@ import config.config as cf
 import config.condition as cd
 import telepot
 from datetime import datetime
-from crawl.jazzstock_object import JazzstockObject
+from object.jazzstock_object import JazzstockObject
 
 
 pd.options.display.max_rows = 500

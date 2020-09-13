@@ -1,7 +1,7 @@
 import sys
 import common.connector_db as db
 from datetime import datetime
-from crawl.jazzstock_core_realtime import JazzstockCoreRealtimeNaver
+from object.jazzstock_core_realtime import JazzstockCoreRealtimeNaver
 
 if __name__=='__main__':
 

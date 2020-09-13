@@ -6,7 +6,7 @@ import common.connector_db as db
 st2 = datetime.now()
 import config.condition as cd
 st3 = datetime.now()
-from crawl.jazzstock_core_simulation import JazzstockCoreSimulationCustom
+from object.jazzstock_core_simulation import JazzstockCoreSimulationCustom
 st4 = datetime.now()
 '''
 
