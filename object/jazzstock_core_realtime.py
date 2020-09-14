@@ -7,6 +7,7 @@ import config.condition as cd
 import telepot
 import jazzstock_bot
 import os
+import common.connector_db as db
 from datetime import datetime
 from object.jazzstock_object import JazzstockObject
 
@@ -62,6 +63,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         # COMMON ==================================================
         self.THEDATE=the_date
         self.the_date_index=the_date_index
+        self.queue = []
 
 
     def initialize_dataframe(self, cntto=0):
@@ -204,14 +206,15 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                                     record.append(temp['result'])
 
                                 print(eachcode, elapesd_time_d, elapesd_time_a, elapesd_time_b, elapesd_time_c)
-
+                                self.db_queue(stockcode=eachcode, message_dic=temp['meta'])
                             except Exception as e:
                                 time.sleep(1)
                                 print('==='*30)
                                 print(' * ERROR : %s, %s'%(eachcode, e))
 
-
+                        self.db_insert()
                         self.send_message_logging(record)
+
 
 
 
@@ -269,6 +272,39 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         else:
             print(' * INFO: TELEGRAM TOKEN OR MESSAGE RECEIVER NOT SPECIFIED')
 
+    def db_queue(self, stockcode, message_dic='TEST'):
+        '''
+        실시간 크롤링된 데이터를 DB에 INSERT 하는 함수
+        개별종목마다 하만 안되고 모아서 한방에 해줘야함
+
+        '''
+        print(" * debug : queueing : ", str(self.THEDATE), message_dic)
+
+
+
+        message = [stockcode, message_dic[0], str(self.THEDATE), message_dic[3],message_dic[4],message_dic[5],message_dic[6],message_dic[7],message_dic[8]]
+        print(" * debug : queueing : ", message)
+        self.queue.append(message)
+        print(self.queue)
+
+    def db_insert(self):
+        '''
+        '''
+
+        # query = 'INSERT INTO jazzdb.T_STOCK_MIN_05_SMAR_REALTIME VALUES %s'%(str(tuple(self.queue+[str(int(time.time()))]))[1:-1])
+
+        if len(self.queue) > 0:
+            rs = []
+            for e in self.queue:
+                rs.append(tuple(e+[str(int(time.time()))]))
+
+            print(rs)
+            query = 'INSERT INTO jazzdb.T_STOCK_MIN_05_SMAR_REALTIME VALUES %s' % (str(tuple(rs))[1:-1])
+            print(' * debug : db insert query : ', query)
+            db.insert(query)
+            self.queue=[]
+        else:
+            print(' * debug: queue length is zero')
 
     def send_message_logging(self, record_list):
         '''
