@@ -282,7 +282,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
 
 
 
-        message = [stockcode, message_dic[0], str(self.THEDATE), message_dic[3],message_dic[4],message_dic[5],message_dic[6],message_dic[7],message_dic[8]]
+        message = [stockcode, str(self.THEDATE), message_dic[0], message_dic[3],message_dic[4],message_dic[5],message_dic[6],message_dic[7],message_dic[8]]
         print(" * debug : queueing : ", message)
         self.queue.append(message)
         print(self.queue)
