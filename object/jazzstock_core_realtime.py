@@ -278,29 +278,21 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         개별종목마다 하만 안되고 모아서 한방에 해줘야함
 
         '''
-        print(" * debug : queueing : ", str(self.THEDATE), message_dic)
-
-
 
         message = [stockcode, str(self.THEDATE), message_dic[0], message_dic[3],message_dic[4],message_dic[5],message_dic[6],message_dic[7],message_dic[8]]
-        print(" * debug : queueing : ", message)
         self.queue.append(message)
-        print(self.queue)
 
     def db_insert(self):
         '''
         '''
 
-        # query = 'INSERT INTO jazzdb.T_STOCK_MIN_05_SMAR_REALTIME VALUES %s'%(str(tuple(self.queue+[str(int(time.time()))]))[1:-1])
 
         if len(self.queue) > 0:
             rs = []
             for e in self.queue:
                 rs.append(tuple(e+[str(int(time.time()))]))
 
-            print(rs)
             query = 'INSERT INTO jazzdb.T_STOCK_MIN_05_SMAR_REALTIME VALUES %s' % (str(tuple(rs))[1:-1])
-            print(' * debug : db insert query : ', query)
             db.insert(query)
             self.queue=[]
         else:
