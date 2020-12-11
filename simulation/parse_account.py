@@ -31,6 +31,10 @@ def main(TIME_START, COND_LABEL):
 
     date_to, date_from = df.DATE.max(), df.DATE.min()
 
+    print(df[df['DATE']==date_to].sort_values(by='PROFIT_REALTIME_RATIO', ascending=False))
+    print(df[df['DATE']==date_to].HOLDPURCHASED.sum())
+    print(df[df['DATE'] == date_to].PROFIT_REALTIME.sum())
+    print(df.PROFIT)
 
     result_df = df.groupby(['DATE']).sum()[['CLOSEDAY', 'AVG', 'PROFIT_REALTIME', 'HISTPURCHASED', 'PROFIT_REALIZED' ]]
     result_df['PROFIT_HIST']=result_df[result_df.index==date_to]['PROFIT_REALTIME'].sum() + df.PROFIT.sum()
@@ -45,9 +49,10 @@ def main(TIME_START, COND_LABEL):
     profit_ratio_realized= profit_sum / result_dic['HISTPURCHASED']
     profit_ratio_expected= result_dic['PROFIT_REALTIME'] / result_dic['CLOSEDAY']
 
+    print(result_df)
 
 
-    print(COND_LABEL, '%s ~ %s (%s 거래일)'%(date_from, date_to, date_count))
+    print(TIME_START, COND_LABEL, '%s ~ %s (%s 거래일)'%(date_from, date_to, date_count))
     print('-'*60)
     print('회수율_자금: {:+.4f} ( {:>10,.0f} / {:>10,.0f} )'.format(recovery_rate, result_dic['HISTPURCHASED'], result_dic['CLOSEDAY']+result_dic['HISTPURCHASED']))
     print('수익률_기대: {:+.4f} ( {:>10,.0f} / {:>10,.0f} )'.format(profit_ratio_expected, result_dic['PROFIT_REALTIME'], result_dic['CLOSEDAY']))
@@ -55,11 +60,77 @@ def main(TIME_START, COND_LABEL):
     print('수익률_도합: {:+.4f} ( {:>10,.0f} / {:>10,.0f} )'.format(profit_ratio_net, result_dic['PROFIT_HIST'], result_dic['CLOSEDAY']+result_dic['HISTPURCHASED']))
     print('-'*60,'\n')
 
-main(TIME_START = '20200819060343_94', COND_LABEL = 'TA')
-main(TIME_START = '20200819060343_94', COND_LABEL = 'TB')
-main(TIME_START = '20200819060343_94', COND_LABEL = 'TC')
-main(TIME_START = '20200819060343_94', COND_LABEL = 'TD')
-# main(TIME_START = '20200819000229_156', COND_LABEL = 'TE')
+
+main(TIME_START='20200823143938_157', COND_LABEL='TP')
+# main(TIME_START = 'rebalancing_0821/FOR_80_157', COND_LABEL = 'TA')
+
+
+#
+# main(TIME_START = 'FOR_80_157', COND_LABEL = 'TA')
+# main(TIME_START = 'INS_80_156', COND_LABEL = 'TA')
+# main(TIME_START = 'PER_80_156', COND_LABEL = 'TA')
+#
+# main(TIME_START = 'FOR_80_157', COND_LABEL = 'TB')
+# main(TIME_START = 'INS_80_156', COND_LABEL = 'TB')
+# main(TIME_START = 'PER_80_156', COND_LABEL = 'TB')
+#
+# main(TIME_START = 'FOR_80_157', COND_LABEL = 'TC')
+# main(TIME_START = 'INS_80_156', COND_LABEL = 'TC')
+# main(TIME_START = 'PER_80_156', COND_LABEL = 'TC')
+#
+# main(TIME_START = 'FOR_80_157', COND_LABEL = 'TD')
+# main(TIME_START = 'INS_80_156', COND_LABEL = 'TD')
+# main(TIME_START = 'PER_80_156', COND_LABEL = 'TD')
+#
+# main(TIME_START = 'FOR_80_157', COND_LABEL = 'TE')
+# main(TIME_START = 'INS_80_156', COND_LABEL = 'TE')
+# main(TIME_START = 'PER_80_156', COND_LABEL = 'TE')
+#
+#
+#
+# main(TIME_START = 'FOR_80_95', COND_LABEL = 'TA')
+# main(TIME_START = 'INS_80_94', COND_LABEL = 'TA')
+# main(TIME_START = 'PER_80_94', COND_LABEL = 'TA')
+#
+# main(TIME_START = 'FOR_80_95', COND_LABEL = 'TB')
+# main(TIME_START = 'INS_80_94', COND_LABEL = 'TB')
+# main(TIME_START = 'PER_80_94', COND_LABEL = 'TB')
+#
+# main(TIME_START = 'FOR_80_95', COND_LABEL = 'TC')
+# main(TIME_START = 'INS_80_94', COND_LABEL = 'TC')
+# main(TIME_START = 'PER_80_94', COND_LABEL = 'TC')
+#
+# main(TIME_START = 'FOR_80_95', COND_LABEL = 'TD')
+# main(TIME_START = 'INS_80_94', COND_LABEL = 'TD')
+# main(TIME_START = 'PER_80_94', COND_LABEL = 'TD')
+#
+# main(TIME_START = 'FOR_80_95', COND_LABEL = 'TE')
+# main(TIME_START = 'INS_80_94', COND_LABEL = 'TE')
+# main(TIME_START = 'PER_80_94', COND_LABEL = 'TE')
+#
+#
+# main(TIME_START = 'FOR_80_34', COND_LABEL = 'TA')
+# main(TIME_START = 'INS_80_33', COND_LABEL = 'TA')
+# main(TIME_START = 'PER_80_33', COND_LABEL = 'TA')
+#
+# main(TIME_START = 'FOR_80_34', COND_LABEL = 'TB')
+# main(TIME_START = 'INS_80_33', COND_LABEL = 'TB')
+# main(TIME_START = 'PER_80_33', COND_LABEL = 'TB')
+#
+# main(TIME_START = 'FOR_80_34', COND_LABEL = 'TC')
+# main(TIME_START = 'INS_80_33', COND_LABEL = 'TC')
+# main(TIME_START = 'PER_80_33', COND_LABEL = 'TC')
+#
+# main(TIME_START = 'FOR_80_34', COND_LABEL = 'TD')
+# main(TIME_START = 'INS_80_33', COND_LABEL = 'TD')
+# main(TIME_START = 'PER_80_33', COND_LABEL = 'TD')
+#
+# main(TIME_START = 'FOR_80_34', COND_LABEL = 'TE')
+# main(TIME_START = 'INS_80_33', COND_LABEL = 'TE')
+# main(TIME_START = 'PER_80_33', COND_LABEL = 'TE')
+
+
+
 
 # print("ndf.HOLDPURCHASED.sum())
 # print((ndf.CLOSEDAY*ndf.HOLDAMOUNT).sum())

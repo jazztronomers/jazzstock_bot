@@ -1,7 +1,7 @@
 import sys
 import common.connector_db as db
 import config.condition as cd
-from crawl.jazzstock_core_realtime import JazzstockCoreRealtimeNaver
+from object.jazzstock_core_realtime import JazzstockCoreRealtimeNaver
 
 # 실행부, 자세한 로직은 JazzstockCrawlCoreSlaveNaver를 참조
 
@@ -11,7 +11,7 @@ if __name__=='__main__':
         stockcode_list = sys.argv[1:]
 
     else:
-        stockcode_list = ['002100']
+        stockcode_list = ['079940']
 
     cond = cd.COND_PROD
 
@@ -42,7 +42,7 @@ if __name__=='__main__':
 
 }
 
-    the_date_index = 2
+    the_date_index = 0
     the_date = db.selectSingleValue('SELECT CAST(DATE AS CHAR) AS DATE FROM jazzdb.T_DATE_INDEXED WHERE CNT = %s'%(the_date_index)).replace('-','')
     m = JazzstockCoreRealtimeNaver(stockcode_list = stockcode_list,
                                    the_date=the_date,

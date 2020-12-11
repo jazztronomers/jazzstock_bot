@@ -6,15 +6,15 @@ import pandas as pd
 import common.connector_db as db
 import util.index_calculator as ic
 import config.condition as cd
+import jazzstock_bot
+import os
 from datetime import datetime
 
-
+src_root = jazzstock_bot.PATH_SRC_ROOT
 
 warnings.filterwarnings('ignore')
-try:
-    timedf = pd.read_csv('../config/time.csv', dtype=str)
-except:
-    timedf = pd.read_csv('config/time.csv', dtype=str)
+timedf = pd.read_csv(os.path.join(jazzstock_bot.PATH_SRC_ROOT,'config/time.csv'), dtype=str)
+
 
 condition_dict = cd.COND_PROD
 
@@ -183,6 +183,8 @@ class JazzstockObject:
             # https://finance.naver.com/item/sise_time.nhn?code=079940&thistime=20200616090000&page=1
             url = "https://finance.naver.com/item/sise_time.nhn?code=%s&thistime=%s%s&page=%s" % (
                 self.stockcode, ndate, ntime, pageidx)
+
+            
             htmls = requests.get(url).text
             ndf = pd.read_html(htmls, header=0)[0]
 

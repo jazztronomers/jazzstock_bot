@@ -40,7 +40,7 @@ def fillindex(ipdf):
     opdf = _movingaverage_volume(opdf)
     opdf = _bolinger(opdf, 20, 2)
     opdf = _stochastics(opdf, 12, 5, 5)
-    opdf = _obv(opdf)
+    # opdf = _obv(opdf)
     opdf = _rsi(opdf)
     opdf = _tradingvalue(opdf)
 
@@ -233,6 +233,12 @@ def _rsi(ipdf, period=14):
 
 @_check_running_time
 def _obv(ipdf):
+
+
+    print('OBV DEBUGGING')
+    print(len(ipdf))
+    print('OBV DEBUGGING')
+
 
     opdf = ipdf.copy()
     opdf['OBV'] = 0

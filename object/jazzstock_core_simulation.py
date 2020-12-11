@@ -4,7 +4,7 @@ import util.index_calculator as ic
 import pandas as pd
 import config.condition as cd
 from datetime import datetime
-from crawl.jazzstock_object_account import JazzstockObject_Account
+from object.jazzstock_object_account import JazzstockObject_Account
 
 pd.options.display.max_rows = 1000
 pd.options.display.max_columns= 500
