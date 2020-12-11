@@ -16,7 +16,7 @@ def insert(query, ip=cs.IP):
 
     cnxn = mc.connect(host=ip, database=dbScheme, user=id, password=pw)
     cursor = cnxn.cursor()
-    cursor.execute("USE %s"%(dbScheme))
+    #cursor.execute("USE %s"%(dbScheme))
     cursor.execute(query)
     # cursor.commit()
     cnxn.commit()
