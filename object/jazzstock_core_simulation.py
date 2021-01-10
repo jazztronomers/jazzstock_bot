@@ -60,14 +60,26 @@ class JazzstockCoreSimulation:
 
 
 class JazzstockCoreSimulationCustom(JazzstockCoreSimulation):
-    def __init__(self, stockcode, condition_buy, the_date, the_date_index, purchased, amount, hist_purchased, hist_selled):
-
-        # debug = [stockcode, condition_buy, the_date, the_date_index, purchased, amount, hist_purchased, hist_selled]
-        # for e in debug:
-        #     print(type(e), e)
-
+    def __init__(self, stockcode,
+                 condition_buy,
+                 the_date,
+                 the_date_index,
+                 purchased,
+                 amount,
+                 hist_purchased,
+                 hist_selled,
+                 cutoff=0.05,
+                 market_open_buy=False,
+                 market_close_sell=False,
+                 default_purchase_open=1000000,
+                 default_purchase=300000):
         super().__init__(stockcode, condition_buy, the_date, the_date_index, purchased, amount, hist_purchased, hist_selled)
 
+        self.market_open_buy = market_open_buy
+        self.market_close_sell = market_close_sell
+        self.cutoff = cutoff
+        self.default_purchase_open = default_purchase_open
+        self.default_purchase = default_purchase
 
     def simulate(self, log_level=5):
 
@@ -85,25 +97,42 @@ class JazzstockCoreSimulationCustom(JazzstockCoreSimulation):
 
         purchased= 0
         selled = 0
-        finished_purchased = 0
         hist_purchased = self.hist_purchased
         hist_selled =  self.hist_selled
 
 
-        for row in self.obj.df_ohlc_realtime_filled.values:
+        for j, row in enumerate(self.obj.df_ohlc_realtime_filled.values):
+
+
             tempdf = pd.DataFrame(data=[row], columns=self.obj.df_ohlc_realtime_filled.columns)
-            res = self.obj.check_status(tempdf, self.condition_buy, condition_sell=None)
-            if 'purchased' in res.keys():
-                purchased += res['purchased']       # 당일매수
-                # hist_purchased += res['purchased']  # 시뮬레이션 시작이후 누적매수
 
-            elif 'selled' in res.keys():
-                selled += res['selled']             # 당일매도
-                hist_selled += res['selled']        # 시뮬레이션 시작이후 누적매도
-                hist_purchased +=  res['selled']-res['profit']
+            # 시초가매수의 경우
+            if self.market_open_buy and j==0:
 
-        # print(self.obj.stockcode)
-        # print(self.obj.df_ohlc_realtime_filled.CLOSE)
+                amount = (self.default_purchase_open//tempdf.OPEN.values[0])+1
+                res = {'purchased':self.obj._buy(tempdf, amount, open=True)}
+                purchased += res['purchased']  # 당일매수
+
+            # 장중5분봉 체크하는경우
+            else:
+                res = self.obj.check_status(tempdf, self.condition_buy, should_sell_cutoff=self.cutoff, default_purchase= self.default_purchase)
+                if 'purchased' in res.keys():
+                    purchased += res['purchased']       # 당일매수
+                    # hist_purchased += res['purchased']  # 시뮬레이션 시작이후 누적매수
+
+                elif 'selled' in res.keys():
+                    selled += res['selled']             # 당일매도
+                    hist_selled += res['selled']        # 시뮬레이션 시작이후 누적매도
+                    hist_purchased +=  res['selled']-res['profit']
+
+            # 종가매도의 경우
+            if self.market_close_sell and j == len(self.obj.df_ohlc_realtime_filled.values)-1 and self.obj.amount !=0:
+
+                selled_result = self.obj._sell(tempdf, self.obj.amount)
+                res = {'selled': selled_result['selled_thistime'], 'profit': selled_result['profit_thistime']}
+                selled += res['selled']  # 당일매도
+                hist_selled += res['selled']  # 시뮬레이션 시작이후 누적매도
+                hist_purchased += res['selled'] - res['profit']
 
         close_day = self.obj.df_ohlc_realtime_filled.CLOSE.tail(1).values[0]
         return self.obj.purchased, \
@@ -119,13 +148,15 @@ class JazzstockCoreSimulationCustom(JazzstockCoreSimulation):
 
 
 if __name__=='__main__':
-    test = JazzstockCoreSimulationCustom(stockcode = '288330',
+    test = JazzstockCoreSimulationCustom(stockcode = '079940',
                                          amount=0,
                                          purchased=0,
-                                         the_date_index=155,
-                                         the_date='2020-01-03',
+                                         the_date_index=36,
+                                         the_date='2020-11-16',
                                          hist_purchased=0,
                                          hist_selled=0,
-                                         condition_buy=cd.COND_TEST_A)
+                                         condition_buy=cd.COND_TEST_A,
+                                         market_open_buy=True,
+                                         market_close_sell=True)
     r = test.simulate()
     print(r)

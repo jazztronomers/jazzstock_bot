@@ -30,10 +30,13 @@ class JazzstockObject_Account(JazzstockObject):
 
         return {"result": ret, "elapsed_time": datetime.now() - st}
 
-    def _buy(self, row, amount):
+    def _buy(self, row, amount, open=False):
 
         self.amount += amount
-        self.purchased += float(row.CLOSE * amount)
+        if open:
+            self.purchased += float(row.OPEN * amount)
+        else:
+            self.purchased += float(row.CLOSE * amount)
         self._record(action='B',row=row, amount=amount, profit=0)
         return float(row.CLOSE * amount)
     # 매도
@@ -67,11 +70,11 @@ class JazzstockObject_Account(JazzstockObject):
         pass
 
 
-    def check_status(self, row, condition_buy, condition_sell=None):
+    def check_status(self, row, condition_buy, should_sell_cutoff=0.05, default_purchase=100000):
 
         if (self.amount > 0):
-            ifsell = self.shouldsell(row)
-            ifbuy = self.shouldbuy(row,condition_buy)
+            ifsell = self.shouldsell(row, should_sell_cutoff)
+            ifbuy = self.shouldbuy(row, condition_buy, default_purchase=default_purchase)
 
             # 팔아야 한다면
             if ifsell:
@@ -96,19 +99,23 @@ class JazzstockObject_Account(JazzstockObject):
             else:
                 return {}
 
-    def shouldbuy(self, row, condition_buy):
+
+
+    def shouldbuy(self, row, condition_buy=None, default_purchase=100000):
+
+        # 지표기준 조건부 매수
         res = self.simul_all_condition_iteration(condition_buy, row)['result']
         if res:
-            return 100000 // int(row.CLOSE) + 1
+            return default_purchase // int(row.CLOSE) + 1
         else:
             return False
 
 
-    def shouldsell(self, row):
+    def shouldsell(self, row, cutoff):
 
-        if int(row.CLOSE) > int((self.purchased / self.amount) * 1.12):
+        if int(row.CLOSE) > int((self.purchased / self.amount) * (1+cutoff)):
 
-            if self.purchased > 500000:
+            if self.purchased > 100000:
                 return self.amount
             else:
 

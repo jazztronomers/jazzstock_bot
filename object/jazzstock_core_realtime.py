@@ -212,9 +212,11 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                                 print('==='*30)
                                 print(' * ERROR : %s, %s'%(eachcode, e))
 
+                        print('@1')
                         self.db_insert()
+                        print('@2')
                         self.send_message_logging(record)
-
+                        print('@3')
 
 
 
@@ -278,7 +280,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         개별종목마다 하만 안되고 모아서 한방에 해줘야함
 
         '''
-
+        print('DBQUEUE')
         message = [stockcode, str(self.THEDATE), message_dic[0], message_dic[3],message_dic[4],message_dic[5],message_dic[6],message_dic[7],message_dic[8]]
         self.queue.append(message)
 
