@@ -12,17 +12,17 @@ dbScheme = cs.DBSCHEME
 
 
 
-def insert(query):
+def insert(query, ip=cs.IP):
 
     cnxn = mc.connect(host=ip, database=dbScheme, user=id, password=pw)
     cursor = cnxn.cursor()
-
+    #cursor.execute("USE %s"%(dbScheme))
     cursor.execute(query)
     # cursor.commit()
     cnxn.commit()
     cnxn.close()
 
-def select(query):
+def select(query, ip=cs.IP):
     cnxn = mc.connect(host=ip, database=dbScheme, user=id, password=pw)
     cursor = cnxn.cursor()
     cursor.execute(query)
@@ -40,7 +40,7 @@ def select(query):
     return rtrlist
 
 
-def delete(query):
+def delete(query, ip=cs.IP):
     cnxn = mc.connect(host=ip, database=dbScheme, user=id, password=pw)
     cursor = cnxn.cursor()
     cursor.execute(query,)
@@ -51,7 +51,7 @@ def delete(query):
 
 
 
-def selectInclueColumn(query):
+def selectInclueColumn(query, ip=cs.IP):
     cnxn = mc.connect(host=ip, database=dbScheme, user=id, password=pw)
     cursor = cnxn.cursor()
     cursor.execute(query)
@@ -71,7 +71,7 @@ def selectInclueColumn(query):
 
 
 
-def selectSingleValue(query):
+def selectSingleValue(query, ip=cs.IP):
     cnxn = mc.connect(host=ip, database=dbScheme, user=id, password=pw)
     cursor = cnxn.cursor()
     cursor.execute(query)
@@ -83,7 +83,7 @@ def selectSingleValue(query):
         return table[0][0]
 
 
-def selectSingleColumn(query):
+def selectSingleColumn(query, ip=cs.IP):
     cnxn = mc.connect(host=ip, database=dbScheme, user=id, password=pw)
     cursor = cnxn.cursor()
     cursor.execute(query)
@@ -98,9 +98,9 @@ def selectSingleColumn(query):
 
 
 
-def selectpd(q):
+def selectpd(q, ip=cs.IP):
     try:
-        rs = selectInclueColumn(q)
+        rs = selectInclueColumn(q, ip=ip)
         column = [str(col).replace('b', '').replace("'", '') for col in rs[1]]
         dt = rs[0]
         df = pd.DataFrame(data=dt, columns=column)
@@ -109,13 +109,13 @@ def selectpd(q):
     except:
 
         time.sleep(3)
-        rs = selectInclueColumn(q)
+        rs = selectInclueColumn(q, ip=ip)
         column = [str(col).replace('b', '').replace("'", '') for col in rs[1]]
         dt = rs[0]
         df = pd.DataFrame(data=dt, columns=column)
         return df
 
-def insertdf(df, table):
+def insertdf(df, table, ip=cs.IP):
 
 
     templist = []
@@ -137,13 +137,13 @@ def insertdf(df, table):
     if q[-1]==',': q=q[:-1]
 
     try:
-        insert(q.replace('nan','NULL'))
+        insert(q.replace('nan','NULL'), ip=ip)
     except:
         time.sleep(0.4)
         try:
-            insert(q)
+            insert(q, ip=ip)
         except Exception as e :
-            print('ERROR! %s\n\t\t%s'%(e, q))
+            print('ERROR! %s\n\t\t%s'%(e, table))
             pass
 if(__name__ == '__main__'):
 
