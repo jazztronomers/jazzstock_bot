@@ -184,8 +184,10 @@ class JazzstockObject:
             url = "https://finance.naver.com/item/sise_time.nhn?code=%s&thistime=%s%s&page=%s" % (
                 self.stockcode, ndate, ntime, pageidx)
 
-            
-            htmls = requests.get(url).text
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+
+            htmls = requests.get(url, headers=headers).text
             ndf = pd.read_html(htmls, header=0)[0]
 
 
