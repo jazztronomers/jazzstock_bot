@@ -123,10 +123,10 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
 
 
                         elapesd_time_ifalert = ret['elapsed_time']
-                        if 'result' in ret.keys() and ret['result'] is not None:
-                            self.send_message_telegram(ret['result'])
-                            record.append(ret['result'])
-
+                        # if 'result' in ret.keys() and ret['result'] is not None:
+                        #     self.send_message_telegram(ret['result'])
+                        #     record.append(ret['result'])
+                        #
                         meta = [float(x) for x in ret['meta']]
 
                         # ===================================================================================
@@ -148,6 +148,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                         print(eachcode, self.THEDATE, ntime, \
                               '%06d, C/V %d, %8d, | P | %+.3f\t%+.3f\t%+.3f\t | V | %+.3f\t%+.3f\t%+.3f\t\t%s'%tuple(meta))
 
+                        self.db_queue(stockcode=eachcode, message_dic=ret['meta'])
 
                               # ,'\t', elapesd_time_crawl, elapesd_time_candle, elapesd_time_calcindex, elapesd_time_ifalert
                               # ,'\t', usage_list)
@@ -157,6 +158,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                     #         print(" ** %s | ERROR: %s"%(eachcode, e))
 
                 self.send_message_logging(record)
+                self.db_insert(debug=True)
 
                 if len(self.stock_dict) < 2:
                     time.sleep(0.02)
@@ -278,10 +280,17 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
 
         '''
         # print('DBQUEUE')
-        message = [stockcode, str(self.THEDATE), message_dic[0], message_dic[3],message_dic[4],message_dic[5],message_dic[6],message_dic[7],message_dic[8]]
+
+        # ['TIME', 'CLOSE', 'VOLUME', 'PSMAR5', 'PSMAR20', 'PSMAR60', 'VSMAR5', 'VSMAR20', 'VSMAR60', 'TRADINGVALUE']
+
+        # AS-IS WITHOUT CLOSE, TRADINGVALUE, ONLY SMAR
+        # message = [stockcode, str(self.THEDATE), message_dic[0], message_dic[3],message_dic[4],message_dic[5],message_dic[6],message_dic[7],message_dic[8]]
+
+        # 20210327 CLOSE, TRADINGVALUE APPENDED
+        message = [stockcode, str(self.THEDATE), message_dic[0], message_dic[3],message_dic[4],message_dic[5],message_dic[6],message_dic[7],message_dic[8], message_dic[1], message_dic[9],]
         self.queue.append(message)
 
-    def db_insert(self):
+    def db_insert(self, debug=False):
         '''
         '''
 
@@ -289,10 +298,13 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         if len(self.queue) > 0:
             rs = []
             for e in self.queue:
-                rs.append(tuple(e+[str(int(time.time())),0]))  # 마지막은 AUTOINCREMENTS의 DUMMY VALUE
+                rs.append(tuple(e[:-2] + [str(int(time.time())),0] + e[-2:]))  # 마지막은 AUTOINCREMENTS의 DUMMY VALUE
 
-            query = 'INSERT INTO jazzdb.T_STOCK_MIN_05_SMAR_REALTIME VALUES %s' % (str(tuple(rs))[1:-1])
-            db.insert(query)
+            query = 'INSERT INTO jazzdb.T_STOCK_MIN_05_SMAR_REALTIME VALUES %s' % (str(tuple(rs))[1:-2])
+            if debug:
+                print(query)
+            else:
+                db.insert(query)
             self.queue=[]
         else:
             print(' * debug: queue length is zero')

@@ -68,7 +68,7 @@ class JazzstockCoreSimulationCustom(JazzstockCoreSimulation):
                  amount,
                  hist_purchased,
                  hist_selled,
-                 cutoff=0.05,
+                 cutoff=0.04,
                  market_open_buy=False,
                  market_close_sell=False,
                  default_purchase_open=1000000,

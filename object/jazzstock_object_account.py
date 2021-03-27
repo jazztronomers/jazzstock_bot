@@ -37,8 +37,9 @@ class JazzstockObject_Account(JazzstockObject):
             self.purchased += float(row.OPEN * amount)
         else:
             self.purchased += float(row.CLOSE * amount)
-        self._record(action='B',row=row, amount=amount, profit=0)
+        self._record(action='B', row=row, amount=amount, profit=0)
         return float(row.CLOSE * amount)
+
     # 매도
     def _sell(self, row, amount):
 
@@ -66,7 +67,7 @@ class JazzstockObject_Account(JazzstockObject):
                 'profit_thistime':float(profit)}
 
     def _record(self, action, row, amount, profit=0):
-        print('* ROW ', self.stockname, action, int(row.CLOSE), str(row.DATE.values), str(row.TIME.values), amount, int(profit))
+        # print('* ROW ', self.stockname, action, int(row.CLOSE), str(row.DATE.values), str(row.TIME.values), amount, int(profit), row)
         pass
 
 
