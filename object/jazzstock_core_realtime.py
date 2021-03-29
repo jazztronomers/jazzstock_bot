@@ -290,7 +290,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         message = [stockcode, str(self.THEDATE), message_dic[0], message_dic[3],message_dic[4], message_dic[5],message_dic[6],message_dic[7],message_dic[8], message_dic[1], message_dic[9],]
         self.queue.append(message)
 
-        print(message)
+        # print(message)
 
     def db_insert(self, debug=False):
         '''
