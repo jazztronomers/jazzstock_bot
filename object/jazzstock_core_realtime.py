@@ -287,8 +287,10 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
         # message = [stockcode, str(self.THEDATE), message_dic[0], message_dic[3],message_dic[4],message_dic[5],message_dic[6],message_dic[7],message_dic[8]]
 
         # 20210327 CLOSE, TRADINGVALUE APPENDED
-        message = [stockcode, str(self.THEDATE), message_dic[0], message_dic[3],message_dic[4],message_dic[5],message_dic[6],message_dic[7],message_dic[8], message_dic[1], message_dic[9],]
+        message = [stockcode, str(self.THEDATE), message_dic[0], message_dic[3],message_dic[4], message_dic[5],message_dic[6],message_dic[7],message_dic[8], message_dic[1], message_dic[9],]
         self.queue.append(message)
+
+        print(message)
 
     def db_insert(self, debug=False):
         '''
@@ -300,11 +302,16 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
             for e in self.queue:
                 rs.append(tuple(e[:-2] + [str(int(time.time())),0] + e[-2:]))  # 마지막은 AUTOINCREMENTS의 DUMMY VALUE
 
-            query = 'INSERT INTO jazzdb.T_STOCK_MIN_05_SMAR_REALTIME VALUES %s' % (str(tuple(rs))[1:-2])
+            if len(rs) > 1:
+                query = 'INSERT INTO jazzdb.T_STOCK_MIN_05_SMAR_REALTIME VALUES %s' % (str(tuple(rs))[1:-1])
+            elif len(rs) == 1:
+                query = 'INSERT INTO jazzdb.T_STOCK_MIN_05_SMAR_REALTIME VALUES %s' % (str(tuple(rs))[1:-2])
+
             if debug:
                 print(query)
             else:
                 db.insert(query)
+
             self.queue=[]
         else:
             print(' * debug: queue length is zero')
