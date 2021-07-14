@@ -262,7 +262,7 @@ class JazzstockCoreRealtimeNaver(JazzstockCoreRealtime):
                 FLUCT = '%s' % (FLUCT)
                 FLUCTRATIO = '%.2f%%' % (FLUCTRATIO * 100)
 
-            message = '%s (%s) : %s / %s \n'%(message_dic['STOCKNAME'], message_dic['STOCKCODE'], message_dic['TIME'], message_dic['COND_NAME'])
+            message = '#%s (%s) : %s / %s \n'%(message_dic['STOCKNAME'], message_dic['STOCKCODE'], message_dic['TIME'], message_dic['COND_NAME'])
             message = message + 'CLSE | %s (%s, %s)\n' % (message_dic['CLOSE'], FLUCT, FLUCTRATIO)
             message = message + 'PMAR | %.3f / %.3f / %.3f\n'%(message_dic['PSMAR5'],message_dic['PSMAR20'],message_dic['PSMAR60'])
             message = message + 'VMAR | %.3f / %.3f / %.3f\n'%(message_dic['VSMAR5'],message_dic['VSMAR20'],message_dic['VSMAR60'])
