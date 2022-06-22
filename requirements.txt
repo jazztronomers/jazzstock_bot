@@ -2,7 +2,7 @@ lxml==4.4.2
 MarkupSafe==1.0
 matplotlib==3.1.0
 mysql-connector-python==8.0.18
-numpy==1.18.5
+numpy==1.22.0
 pandas==1.0.5
 PyYAML==3.12
 requests==2.20.0
